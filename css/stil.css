@@ -1,0 +1,168 @@
+/* ORION PRÜFSTAND — Stil
+ *
+ * Militärisch, aber RUHIG: mittel-dunkles Graphit statt Nachtblau, keine
+ * Animationen, kein Radar, kein Neon. Die Buchfarben sind dieselben wie im
+ * Panel (Polymarket blau, Kalshi tealgrün, Smarkets grün, Betfair gelb),
+ * damit das Auge nicht umlernen muss. Runde Ecken: 12 px Flächen, 8 px Chips.
+ */
+:root {
+  --grund:      #24262B;
+  --karte:      #2F3339;
+  --karte-tief: #292C31;
+  --rand:       #3C4149;
+  --text:       #E8EAED;
+  --leise:      #A6ADB8;
+  --gold:       #C8AC63;
+  --gruen:      #8FC178;
+  --orange:     #E0A458;
+  --rot:        #E07A7A;
+  --pm: #6C93E8;
+  --ka: #3FB59A;
+  --sm: #5BBE7C;
+  --bf: #E8C15A;
+  --xx: #9AA3AF;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--grund);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.mono { font-family: Consolas, 'Cascadia Mono', monospace; }
+.klein { font-size: 0.85rem; }
+.leise { color: var(--leise); }
+.gruen { color: var(--gruen); }
+.orange { color: var(--orange); }
+.rot { color: var(--rot); }
+
+.rahmen { max-width: 1060px; margin: 0 auto; padding: 20px 16px 80px; }
+
+header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+header h1 {
+  margin: 0; font-size: 1.5rem; letter-spacing: 0.14em; font-weight: 700;
+  color: var(--gold); text-transform: uppercase;
+}
+header .untertitel { color: var(--leise); }
+.leitsatz { color: var(--leise); margin: 0 0 18px; font-size: 0.92rem; }
+
+h2 {
+  font-size: 1.02rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); margin: 30px 0 10px; font-weight: 600;
+  border-bottom: 1px solid var(--rand); padding-bottom: 6px;
+}
+
+.karte {
+  background: var(--karte); border: 1px solid var(--rand);
+  border-radius: 12px; padding: 14px 16px; margin: 10px 0;
+}
+.kartentitel {
+  font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--leise); margin-bottom: 8px;
+}
+.trenn { border-top: 1px solid var(--rand); margin: 10px 0; }
+
+textarea {
+  width: 100%; min-height: 200px; resize: vertical;
+  background: var(--karte-tief); color: var(--text);
+  border: 1px solid var(--rand); border-radius: 12px;
+  padding: 12px 14px; font-family: Consolas, 'Cascadia Mono', monospace;
+  font-size: 0.86rem; line-height: 1.45;
+}
+textarea:focus, input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+.knopf {
+  display: inline-block; cursor: pointer; border: 1px solid var(--rand);
+  background: var(--karte); color: var(--text);
+  border-radius: 10px; padding: 10px 18px; font-size: 0.95rem;
+  min-height: 44px; text-decoration: none;
+}
+.knopf:hover { border-color: var(--gold); }
+.knopf.haupt { background: var(--gold); color: #1F2125; border-color: var(--gold); font-weight: 700; }
+.knopf.haupt:hover { filter: brightness(1.06); }
+.knopf.klein { min-height: 0; padding: 4px 10px; font-size: 0.82rem; border-radius: 8px; }
+.knopf.rotrand:hover { border-color: var(--rot); color: var(--rot); }
+.knopfzeile { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+
+input[type=email], input[type=password], input[type=text] {
+  background: var(--karte-tief); color: var(--text);
+  border: 1px solid var(--rand); border-radius: 10px;
+  padding: 10px 12px; font-size: 0.95rem; min-height: 44px;
+}
+
+.chip {
+  display: inline-block; border-radius: 8px; padding: 2px 10px;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em;
+  background: var(--karte-tief); border: 1px solid var(--rand);
+}
+.chip.pm { color: var(--pm); border-color: var(--pm); }
+.chip.ka { color: var(--ka); border-color: var(--ka); }
+.chip.sm { color: var(--sm); border-color: var(--sm); }
+.chip.bf { color: var(--bf); border-color: var(--bf); }
+.chip.xx { color: var(--xx); }
+
+.seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 760px) { .seiten { grid-template-columns: 1fr; } }
+.karte.seite { margin: 0; }
+.rand-pm { border-left: 3px solid var(--pm); }
+.rand-ka { border-left: 3px solid var(--ka); }
+.rand-sm { border-left: 3px solid var(--sm); }
+.rand-bf { border-left: 3px solid var(--bf); }
+.seitekopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+.feld { display: flex; gap: 12px; padding: 3px 0; align-items: baseline; flex-wrap: wrap; }
+.feldname { flex: 0 0 220px; color: var(--leise); font-size: 0.88rem; }
+.feldwert { flex: 1 1 auto; min-width: 160px; }
+@media (max-width: 560px) { .feldname { flex-basis: 100%; } }
+
+.urteil { border-radius: 12px; padding: 14px 16px; margin: 12px 0; border: 1px solid var(--rand); background: var(--karte); }
+.urteil.gruen { border-color: var(--gruen); }
+.urteil.rot { border-color: var(--rot); }
+.urteil.orange { border-color: var(--orange); }
+.urteiltitel { font-weight: 700; letter-spacing: 0.08em; margin-bottom: 4px; }
+.urteil.gruen .urteiltitel { color: var(--gruen); }
+.urteil.rot .urteiltitel { color: var(--rot); }
+.urteil.orange .urteiltitel { color: var(--orange); }
+
+.schritt {
+  background: var(--karte); border: 1px solid var(--rand); border-left-width: 3px;
+  border-radius: 12px; padding: 10px 14px; margin: 8px 0;
+}
+.schritt.ok { border-left-color: var(--gruen); }
+.schritt.abweichung { border-left-color: var(--rot); }
+.schritt.unpruefbar { border-left-color: var(--orange); }
+.schrittkopf { display: flex; gap: 10px; align-items: center; margin-bottom: 3px; flex-wrap: wrap; }
+.marke {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  border-radius: 8px; padding: 1px 8px; border: 1px solid;
+}
+.marke.ok { color: var(--gruen); border-color: var(--gruen); }
+.marke.abweichung { color: var(--rot); border-color: var(--rot); }
+.marke.unpruefbar { color: var(--orange); border-color: var(--orange); }
+.kommentar { color: var(--orange); font-size: 0.88rem; margin-top: 4px; }
+
+.warnung {
+  border-radius: 12px; padding: 10px 14px; margin: 6px 0;
+  background: var(--karte); border: 1px solid var(--rand); border-left-width: 3px;
+}
+.warnung.fehler, .warnung.rot { border-left-color: var(--rot); }
+.warnung.warnung, .warnung.orange { border-left-color: var(--orange); }
+.warnung.hinweis { border-left-color: var(--leise); }
+.warnung.gruen { border-left-color: var(--gruen); }
+
+.verlaufzeile {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: var(--karte); border: 1px solid var(--rand);
+  border-radius: 12px; padding: 8px 12px; margin: 6px 0;
+}
+.verlauftitel { flex: 1 1 240px; }
+.punkt { width: 10px; height: 10px; border-radius: 50%; background: var(--xx); flex: 0 0 auto; }
+.punkt.gruen { background: var(--gruen); }
+.punkt.rot { background: var(--rot); }
+.punkt.orange { background: var(--orange); }
+
+footer { margin-top: 46px; color: var(--leise); font-size: 0.84rem; border-top: 1px solid var(--rand); padding-top: 12px; }
+footer a { color: var(--gold); }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Orion Prüfstand — unabhängige Nachrechnung</title>
+  <link rel="stylesheet" href="css/stil.css">
+</head>
+<body>
+<div class="rahmen">
+
+  <header>
+    <h1>Orion Prüfstand</h1>
+    <span class="untertitel">unabhängige Nachrechnung — bewusst getrennt vom Panel</span>
+  </header>
+  <p class="leitsatz">
+    Das Panel SUCHT. Dieses Programm PRÜFT. Es teilt keinen Code und keine Daten mit dem
+    Panel — zwei getrennte Fassungen derselben Rechnung. Decken sie sich, ist die Zahl
+    belastbar; decken sie sich nicht, wird die Stelle genannt. Drei Urteile, nie zwei:
+    deckt sich · weicht ab · nicht prüfbar.
+  </p>
+
+  <h2>1 · Bericht einfügen</h2>
+  <div class="karte">
+    <p class="leise" style="margin-top:0">
+      Im Panel auf einer Karte <b>„Kopieren"</b> drücken, dann hier einfügen —
+      die Prüfung startet von selbst. Zerlegt wird alles: Spiel, beide Seiten, Kurse,
+      Gebühren, Effektivquoten, Links, Zeiten, Rechnung.
+    </p>
+    <textarea id="eingabe" spellcheck="false"
+      placeholder="Hier den kopierten Prüfbericht einfügen (Strg+V) …"></textarea>
+    <div class="knopfzeile">
+      <button type="button" class="knopf haupt" id="pruefen">Aufteilen &amp; nachrechnen</button>
+      <button type="button" class="knopf" id="leeren">Leeren</button>
+      <span class="leise" id="eingabe-hinweis"></span>
+    </div>
+  </div>
+
+  <div id="ergebnis" style="display:none">
+
+    <div id="urteil"></div>
+    <div class="leise klein" id="speicher-hinweis"></div>
+
+    <h2>2 · Aufgeteilt</h2>
+    <div id="aufteilung"></div>
+
+    <h2>3 · Der Rechenweg, Schritt für Schritt</h2>
+    <p class="leise" style="margin-top:0">
+      Jeder Schritt: Formel, eingesetzte Zahlen, eigenes Ergebnis, daneben der Wert des
+      Panels. Rot heißt: dort von Hand nachrechnen und ausbessern.
+    </p>
+    <div id="rechenweg"></div>
+
+    <h2>4 · Warnzeichen</h2>
+    <p class="leise" style="margin-top:0">
+      Dinge, die rechnerisch stimmen können und trotzdem gefährlich sind — alter Kurs,
+      unstimmiges Gegenbuch, verdächtig hohe Rendite, wacklige Zuordnung.
+    </p>
+    <div id="warnungen"></div>
+
+    <h2>5 · Sind die Zahlen noch aktuell?</h2>
+    <div class="karte">
+      <p class="leise" style="margin-top:0">
+        Einmaliger Abruf auf Klick, kein Takt. Polymarket ist aus dem Browser prüfbar
+        (gemessen 17.08.: Katalog und Orderbuch antworten). Kalshi und Smarkets werden
+        versucht, blocken den Browser aber in der Regel (gemessen 17.08.) — dann steht
+        hier „nicht prüfbar" statt einer geratenen Zahl. Betfair kann nur die Bridge
+        lesen; dort hilft der Orbit-Link zum Selbstvergleich.
+      </p>
+      <button type="button" class="knopf" id="aktualitaet-knopf">Jetzt beim Anbieter nachsehen</button>
+      <div id="aktualitaet-ergebnis" style="margin-top:10px"></div>
+    </div>
+
+  </div>
+
+  <h2>Verlauf</h2>
+  <div class="karte">
+    <div id="konto-status" class="leise"></div>
+    <div class="knopfzeile" id="konto-formular">
+      <input type="email" id="konto-mail" placeholder="E-Mail" autocomplete="username">
+      <input type="password" id="konto-passwort" placeholder="Passwort (mind. 8 Zeichen)" autocomplete="current-password">
+      <button type="button" class="knopf" id="anmelden">Anmelden</button>
+      <button type="button" class="knopf" id="konto-anlegen">Konto anlegen</button>
+    </div>
+    <div class="knopfzeile">
+      <button type="button" class="knopf klein" id="abmelden" style="display:none">Abmelden</button>
+      <span class="leise klein" id="konto-hinweis"></span>
+    </div>
+    <div id="verlauf-liste" style="margin-top:8px"></div>
+  </div>
+
+  <footer>
+    Orion Prüfstand · prüft Berichte des Orion Panel Pro (Knopf „Kopieren") ·
+    Formeln: Effektivquote nach Gebühr, Kehrwertsumme, Aufteilung auf gleiche Auszahlung ·
+    Erfahrungswerte aus den Panel-Messungen vom 13.08.2026 ·
+    keine Kopplung an den Scanner, kein Takt, keine Panel-Daten.
+  </footer>
+
+</div>
+
+<script src="js/rechnung.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/pruefer.js"></script>
+<script src="js/aktualitaet.js"></script>
+<script src="js/verlauf.js"></script>
+<script src="js/oberflaeche.js"></script>
+</body>
+</html>

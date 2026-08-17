@@ -1,0 +1,42 @@
+ORION PANEL PRO — vollständiger Prüfbericht einer Zeile
+Kopiert am 17.08. 21:40
+----------------------------------------
+SPIEL/FRAGE: FC Probe gegen SV Muster
+Bereich: Fußball (Tag: soccer)
+Partie beim zweiten Buch: FC Probe v SV Muster
+Zuordnung (wie sicher dieselbe Partie gemeint ist): 0.92
+----------------------------------------
+SEITE 1 — Polymarket: JA · Anteilspreis 0.480
+  Ausgang: FC Probe
+  Gebühr: 4.0 % (dokumentierter Standardtarif, nicht am Konto gemessen)
+  Effektivquote (nach Gebühr): 2.063
+  Formel: Gebührenanteil = Satz × Preis × (1 − Preis) = 4.0 % × 0.480 × 0.520 = 0.0100 → Effektivquote = (1 − 0.0100) ÷ 0.480 = 2.063
+  Kurs unverändert seit: 22 min
+  Handelbare Menge (beste Preisstufe): 182.40 $
+  Link: https://polymarket.com/event/fc-probe-sv-muster/fc-probe-sv-muster-winner
+SEITE 2 — Smarkets: Back · Quote 2.06
+  Ausgang: SV Muster oder Unentschieden
+  Gebühr: 2.0 % (dokumentierter Standardtarif, nicht am Konto gemessen)
+  Effektivquote (nach Gebühr): 2.039
+  Kurs unverändert seit: 2 min
+  Handelbare Menge (beste Preisstufe): 96.10 $
+  Link: https://smarkets.com/event/44991234/sport/football/fc-probe-vs-sv-muster
+----------------------------------------
+DIE RECHNUNG (so kam das Ergebnis zustande):
+  Kehrwertsumme = 1/2.063 + 1/2.039 = 0.9753
+  Rendite = (1 / 0.9753 - 1) x 100 = +2.53 % — nach allen Gebühren
+  Aufteilung bei 100 $ Einsatz: 49.71 $ auf Polymarket, 50.29 $ auf Smarkets
+  Auszahlung bei BEIDEN Ausgängen: 102.53 $
+  Max. Einsatz (beide Seiten zusammen): 240.00 $ · tatsächlicher Gewinn: 6.07 $
+  Buchprobe Gegenbuch: 0.9850 — UNSTIMMIG, ein Kurs klebt vermutlich
+  Währung: kein Wechselkurs verfügbar — Beträge in $
+----------------------------------------
+ZEITEN:
+  Gefunden: 17.08. 21:12 (vor 28 min)
+  Zuletzt bestätigt (beide Seiten so gesehen): 17.08. 21:39 (vor 1 min)
+  Anpfiff: 18.08. 20:00 (laut Smarkets)
+  Wette endet: 18.08. 20:00 — Achtung: das ist meist der Anpfiff, nicht das Spielende
+----------------------------------------
+ABSAGE-BILANZ (der dritte Ausgang): nicht voll belegt — die Regel des Marktes VOR dem Setzen lesen
+Extern nachrechnen: https://beispiel-rechner.example — beide Effektivquoten als Quoten eintragen, Gebühr dort 0 (steckt schon drin).
+Interne Nummer der Zeile: #217
