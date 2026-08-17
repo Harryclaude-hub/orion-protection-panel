@@ -1,8 +1,9 @@
-/* ORION PRÜFSTAND — Oberfläche
+/* ORION PROTECTION PANEL — Oberfläche
  *
- * Zeichnet Eingabe, Aufteilung, Rechenweg, Warnzeichen, Aktualität und
- * Verlauf. Rechnet selbst NICHTS — alle Zahlen kommen aus pruefer.js /
- * aktualitaet.js. Alles Eingefügte wird vor dem Zeichnen entschärft.
+ * Zeichnet Eingabe, Aufteilung, Rechenweg, Links, Warnzeichen, den
+ * Einsatzrechner, die Aktualität und den Verlauf. Rechnet selbst NICHTS —
+ * alle Zahlen kommen aus pruefer.js / einsatz.js / aktualitaet.js.
+ * Alles Eingefügte wird vor dem Zeichnen entschärft.
  */
 (function (welt) {
   'use strict';
@@ -205,6 +206,109 @@
       '</div>';
   }
 
+  /* ---------- Einsatzrechner ----------
+   * Aus „2,53 % auf dem Papier" wird hier: wie viel lege ich wirklich auf
+   * welche Seite, was kommt bei welchem Ausgang zurück, und was bleibt
+   * garantiert übrig, nachdem auf brauchbare Beträge gerundet wurde. */
+  function einsatzZeichnen() {
+    var b = zustand.bericht, e = zustand.ergebnis;
+    if (!b || !e || !isFinite(e.qe1) || !isFinite(e.qe2)) {
+      el('einsatz-ergebnis').innerHTML = '<div class="leise">Erst einen Bericht prüfen, Chef.</div>';
+      return;
+    }
+    var E = P.einsatz;
+    var betrag = Number(el('einsatz-betrag').value);
+    if (!isFinite(betrag) || betrag <= 0) betrag = 100;
+    var schritt = Number(el('einsatz-schritt').value) || 0.01;
+
+    /* Der Höchsteinsatz des Berichts steht in der Währung des Berichts. */
+    var maxE = (b.rechnung && isFinite(b.rechnung.maxEinsatz)) ? b.rechnung.maxEinsatz : null;
+    var r = E.rechne({ qe1: e.qe1, qe2: e.qe2, gesamt: betrag, schritt: schritt, maxEinsatz: maxE });
+    if (!r) { el('einsatz-ergebnis').innerHTML = '<div class="warnung orange">Ohne beide Effektivquoten kein Einsatzplan.</div>'; return; }
+
+    var b1 = b.seiten[0] || {}, b2 = b.seiten[1] || {};
+    var n1 = b1.buch || 'Seite 1', n2 = b2.buch || 'Seite 2';
+    var eh = (b.rechnung && b.rechnung.sEinheit) ? ' ' + b.rechnung.sEinheit : '';
+    var mg = E.marge(r.inv), pf = E.puffer(e.qe1, e.qe2);
+
+    /* Das Rechenblatt: so kommt der Einsatzplan zustande. */
+    var blatt = [
+      'Schritt A — ideale Aufteilung (auf gleiche Auszahlung):',
+      '  ' + n1 + ': ' + f(betrag, 2) + ' × (1 ÷ ' + f(e.qe1, 3) + ') ÷ ' + f(r.inv, 4) + ' = ' + f(r.ideal1, 2),
+      '  ' + n2 + ': ' + f(betrag, 2) + ' − ' + f(r.ideal1, 2) + ' = ' + f(r.ideal2, 2),
+      'Schritt B — gerundet auf ' + (schritt >= 1 ? f(schritt, 0) : f(schritt, 2)) + ':',
+      '  ' + n1 + ': ' + f(r.ideal1, 2) + ' → ' + f(r.s1, 2) + '   ·   ' + n2 + ': ' + f(r.ideal2, 2) + ' → ' + f(r.s2, 2),
+      '  wirklich eingesetzt: ' + f(r.s1, 2) + ' + ' + f(r.s2, 2) + ' = ' + f(r.eingesetzt, 2),
+      'Schritt C — was bei welchem Ausgang zurückkommt:',
+      '  Ausgang ' + n1 + ': ' + f(r.s1, 2) + ' × ' + f(e.qe1, 3) + ' = ' + f(r.auszahlung1, 2) + '   → Gewinn ' + f(r.gewinn1, 2),
+      '  Ausgang ' + n2 + ': ' + f(r.s2, 2) + ' × ' + f(e.qe2, 3) + ' = ' + f(r.auszahlung2, 2) + '   → Gewinn ' + f(r.gewinn2, 2),
+      'Schritt D — garantiert ist der SCHLECHTERE der beiden:',
+      '  min(' + f(r.gewinn1, 2) + ' · ' + f(r.gewinn2, 2) + ') = ' + f(r.garantiert, 2) +
+        '   das sind ' + f(r.renditeEffektiv, 2) + ' % vom eingesetzten Geld',
+      '  ohne Rundung wären es ' + f(r.idealRendite, 2) + ' % — die Rundung kostet ' + f(r.rundungsverlust, 2) + ' Punkte'
+    ];
+
+    var zettel = '<div class="blatt">' +
+      '<div class="blattformel">Einsatz ' + f(betrag, 2) + eh + ', gerundet auf ' + (schritt >= 1 ? f(schritt, 0) : f(schritt, 2)) + '</div>' +
+      blatt.map(function (z) {
+        var ein = /^\s/.test(z);
+        return '<div class="blattzeile' + (ein ? ' eingerueckt' : ' abschnitt') + '">' + txt(z.trim()) + '</div>';
+      }).join('') + '</div>';
+
+    /* Der Befehl: was tatsächlich zu tun ist. */
+    var befehl =
+      '<div class="einsatzbefehl">' +
+        '<div class="ebseite"><span class="chip ' + (BUCH_KLASSE[b1.buchNorm] || 'xx') + '">' + txt(n1) + '</span>' +
+          '<b class="ebbetrag">' + txt(f(r.s1, 2)) + txt(eh) + '</b>' +
+          '<span class="leise klein">' + txt(b1.seiteText || '') + ' · Effektivquote ' + txt(f(e.qe1, 3)) + '</span></div>' +
+        '<div class="ebseite"><span class="chip ' + (BUCH_KLASSE[b2.buchNorm] || 'xx') + '">' + txt(n2) + '</span>' +
+          '<b class="ebbetrag">' + txt(f(r.s2, 2)) + txt(eh) + '</b>' +
+          '<span class="leise klein">' + txt(b2.seiteText || '') + ' · Effektivquote ' + txt(f(e.qe2, 3)) + '</span></div>' +
+        '<div class="ebseite ' + (r.nochArbitrage ? 'gutfall' : 'schlechtfall') + '">' +
+          '<span class="bwname">garantierter Gewinn</span>' +
+          '<b class="ebbetrag">' + (r.garantiert >= 0 ? '+' : '') + txt(f(r.garantiert, 2)) + txt(eh) + '</b>' +
+          '<span class="leise klein">' + txt(f(r.renditeEffektiv, 2)) + ' % · schlechtester Ausgang</span></div>' +
+      '</div>';
+
+    /* Kennzahlen, wie sie ein Scanner zeigt — hier alle selbst gerechnet. */
+    var kennzahlen = '<div class="bewertung">' +
+      '<span class="bwfeld"><span class="bwname">Marge des Marktes</span><b class="mono">' + txt(f(mg, 2)) + ' %</b></span>' +
+      '<span class="bwfeld"><span class="bwname">Wahrscheinlichkeit ' + txt(n1) + '</span><b class="mono">' + txt(f(E.wahrscheinlichkeit(e.qe1), 1)) + ' %</b></span>' +
+      '<span class="bwfeld"><span class="bwname">Wahrscheinlichkeit ' + txt(n2) + '</span><b class="mono">' + txt(f(E.wahrscheinlichkeit(e.qe2), 1)) + ' %</b></span>' +
+      (pf ? '<span class="bwfeld"><span class="bwname">Kurspuffer Seite 1</span><b class="mono">' + txt(f(pf.spielraumProzent, 2)) + ' %</b></span>' : '') +
+      '</div>';
+
+    var hinweise = [];
+    if (!r.nochArbitrage) {
+      hinweise.push('<div class="warnung fehler">Nach der Rundung bleibt KEIN sicherer Gewinn mehr übrig ' +
+        '(' + f(r.garantiert, 2) + '). Kleiner runden oder mehr einsetzen — oder die Finger davon lassen.</div>');
+    }
+    if (r.unterschiedDerAusgaenge > 0.005) {
+      hinweise.push('<div class="warnung hinweis">Durch die Rundung zahlen die beiden Ausgänge unterschiedlich aus ' +
+        '(' + f(r.gewinn1, 2) + ' gegen ' + f(r.gewinn2, 2) + '). Verlass dich auf den kleineren Wert — der andere ist Zufall.</div>');
+    }
+    if (r.ueberMax === true) {
+      hinweise.push('<div class="warnung warnung">Der Einsatz ' + f(r.eingesetzt, 2) + ' liegt ÜBER dem, was die dünnere Seite ' +
+        'laut Bericht aufnimmt (' + f(r.maxEinsatz, 2) + '). Darüber bekommst du nicht mehr diese Kurse.</div>');
+    }
+    if (r.maxEinsatz === null) {
+      hinweise.push('<div class="warnung hinweis">Der Bericht nennt keinen Höchsteinsatz — ob die Bücher diesen Betrag ' +
+        'aufnehmen, ist damit NICHT geprüft. Unbekannt heißt nicht unbegrenzt.</div>');
+    }
+    if (pf && pf.spielraumProzent < 1) {
+      hinweise.push('<div class="warnung warnung">Der Kurspuffer ist mit ' + f(pf.spielraumProzent, 2) + ' % sehr dünn: ' +
+        'schon eine kleine Kursbewegung auf Seite 1 kippt den Vorteil. Zuerst diese Seite setzen.</div>');
+    }
+
+    el('einsatz-ergebnis').innerHTML = befehl + zettel + kennzahlen + hinweise.join('') +
+      '<details class="erklaerung"><summary>Was bedeutet dieser Abschnitt?</summary>' +
+      '<p>Der Panel-Bericht rechnet immer mit 100 als Grundeinsatz und tut so, als könnte man ' +
+      'Beträge wie 49,71 setzen. In Wirklichkeit rundet man — und ab da zahlen die beiden Ausgänge ' +
+      'nicht mehr gleich aus. Deshalb steht hier der garantierte Gewinn: der schlechtere der beiden. ' +
+      'Die Marge des Marktes ist, wie viel Prozent die Kehrwertsumme unter 100 liegt. Der Kurspuffer ' +
+      'sagt, wie weit sich Seite 1 bewegen darf, bevor der Vorteil weg ist.</p></details>';
+  }
+
   /* ---------- Aktualität ---------- */
   function aktualitaetZeichnen(a, b) {
     var teile = [];
@@ -311,6 +415,7 @@
     rechenwegZeichnen(erg);
     linksZeichnen(erg);
     warnungenZeichnen(erg);
+    einsatzZeichnen();
     el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Bereit, Chef — der Abruf passiert nur auf Befehl, einmalig.</div>';
 
     P.verlauf.speichern(b, erg).then(function (wo) {
@@ -331,6 +436,13 @@
     el('eingabe').addEventListener('paste', function () {
       /* Nach dem Einfügen direkt prüfen — ein Handgriff statt zwei. */
       setTimeout(pruefen, 60);
+    });
+
+    /* Einsatzrechner: rechnet sofort mit, während man tippt — reine
+     * Arithmetik auf zwei Zahlen, das kostet nichts. */
+    ['einsatz-betrag', 'einsatz-schritt'].forEach(function (id) {
+      el(id).addEventListener('input', function () { if (zustand.bericht) einsatzZeichnen(); });
+      el(id).addEventListener('change', function () { if (zustand.bericht) einsatzZeichnen(); });
     });
 
     el('aktualitaet-knopf').addEventListener('click', function () {

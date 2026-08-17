@@ -44,7 +44,20 @@ Designarbeit laufen die Funktions-Selbsttests.
    Kalshi-Kennungen und Orbit-Marktnummern tragen keine Wörter — dort steht
    ehrlich „von außen nicht prüfbar". Beim Aktualitäts-Abruf nennt Polymarket
    zusätzlich die FRAGE des Marktes, den der Link öffnet — der schärfste Beleg.
-6. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
+6. **Einsatzrechner — „was setze ich wirklich?"** Der Bericht rechnet immer
+   mit 100 als Grundeinsatz und mit Beträgen wie 49,71. Gesetzt wird aber
+   mit echtem Geld und auf runde Summen, und **ab da zahlen die beiden
+   Ausgänge nicht mehr gleich aus**. Der Rechner zeigt: Einsatz je Seite
+   (frei wählbarer Gesamtbetrag, Rundung auf Cent/1/5/10), Auszahlung und
+   Gewinn **je Ausgang getrennt**, den **garantierten** Gewinn (immer der
+   schlechtere Ausgang, nie der bessere), die effektive Rendite nach
+   Rundung und was die Rundung gekostet hat. Dazu die Kennzahlen eines
+   Scanners: Marge des Marktes, implizite Wahrscheinlichkeiten je Seite,
+   Kurspuffer. Warnt, wenn die Rundung die Arbitrage auffrisst oder der
+   Einsatz über dem Höchstbetrag des Berichts liegt.
+   *(Fachliche Arbeitsschritte wie bei professionellen Surebet-Rechnern —
+   die Rechnung ist hier eigenständig umgesetzt und getestet.)*
+7. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
    sind — mit den Erfahrungswerten der Panel-Messungen vom 13.08.2026:
    - Kurs länger als 15 Minuten unverändert (7 von 8 falschen Funden kamen
      von einem klebenden Kurs)
@@ -75,6 +88,7 @@ Designarbeit laufen die Funktions-Selbsttests.
 | `js/rechnung.js` | eigenständige Zweitfassung der Formeln (kein Panel-Code) |
 | `js/parser.js` | zerlegt den kopierten Bericht, rät nie |
 | `js/linkpruefung.js` | Buch↔Adresse + Wortabgleich der Links, drei Zustände |
+| `js/einsatz.js` | Einsatzrechner: Rundung, Gewinn je Ausgang, Marge, Puffer |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
 | `js/aktualitaet.js` | einmaliger Anbieter-Abruf + Neuberechnung |
 | `js/verlauf.js` | Anmeldung (Supabase auth/v1) + Ablage (rest/v1), localStorage-Rückfall |

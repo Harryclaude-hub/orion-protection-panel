@@ -88,7 +88,31 @@
     </p>
     <div id="warnungen"></div>
 
-    <h2>6 · Sind die Zahlen noch aktuell?</h2>
+    <h2>6 · Was setze ich wirklich?</h2>
+    <div class="karte">
+      <p class="leise" style="margin-top:0">
+        Der Bericht rechnet mit 100 als Grundeinsatz und mit Beträgen wie 49,71 — gesetzt
+        wird aber mit echtem Geld und auf runde Summen. Ab da zahlen die beiden Ausgänge
+        <b>nicht mehr gleich</b> aus. Hier steht, was auf welche Seite gehört und was
+        garantiert übrig bleibt: immer der schlechtere der beiden Ausgänge.
+      </p>
+      <div class="knopfzeile">
+        <label class="eingabefeld">Einsatz gesamt
+          <input type="number" id="einsatz-betrag" value="100" min="1" step="10" inputmode="decimal">
+        </label>
+        <label class="eingabefeld">Runden auf
+          <select id="einsatz-schritt">
+            <option value="0.01">Cent (0,01)</option>
+            <option value="1" selected>ganze (1)</option>
+            <option value="5">Fünfer (5)</option>
+            <option value="10">Zehner (10)</option>
+          </select>
+        </label>
+      </div>
+      <div id="einsatz-ergebnis" style="margin-top:10px"></div>
+    </div>
+
+    <h2>7 · Sind die Zahlen noch aktuell?</h2>
     <div class="karte">
       <p class="leise" style="margin-top:0">
         Einmaliger Abruf auf Klick, kein Takt. Polymarket ist aus dem Browser prüfbar
@@ -140,6 +164,7 @@
 <script src="js/parser.js"></script>
 <script src="js/linkpruefung.js"></script>
 <script src="js/pruefer.js"></script>
+<script src="js/einsatz.js"></script>
 <script src="js/aktualitaet.js"></script>
 <script src="js/verlauf.js"></script>
 <script src="js/oberflaeche.js"></script>

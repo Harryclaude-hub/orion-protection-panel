@@ -282,6 +282,36 @@ input[type=email], input[type=password], input[type=text] {
 
 .kommentar { color: var(--orange); font-size: 0.88rem; margin-top: 6px; }
 
+/* ---------- Einsatzrechner ---------- */
+.eingabefeld {
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise);
+}
+.eingabefeld input, .eingabefeld select {
+  background: var(--grund-tief); color: var(--text);
+  border: 1px solid var(--rand); border-radius: 4px;
+  padding: 8px 10px; font-size: 0.95rem; min-height: 40px;
+  font-family: Consolas, 'Cascadia Mono', monospace;
+}
+.einsatzbefehl {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--rand); border: 1px solid var(--rand); border-radius: 4px;
+  margin-bottom: 10px;
+}
+@media (max-width: 700px) { .einsatzbefehl { grid-template-columns: 1fr; } }
+.ebseite {
+  background: var(--karte); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+}
+.ebbetrag {
+  font-family: Consolas, 'Cascadia Mono', monospace;
+  font-size: 1.5rem; line-height: 1.1; color: var(--text);
+}
+.ebseite.gutfall { box-shadow: inset 0 0 0 1px var(--gruen); }
+.ebseite.gutfall .ebbetrag { color: var(--gruen); }
+.ebseite.schlechtfall { box-shadow: inset 0 0 0 1px var(--rot); }
+.ebseite.schlechtfall .ebbetrag { color: var(--rot); }
+
 /* ---------- Warnungen / Links ---------- */
 .warnung {
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);

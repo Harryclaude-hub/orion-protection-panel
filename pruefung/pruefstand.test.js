@@ -286,6 +286,58 @@ var mengeSchritt = ohneMenge.schritte.filter(function (s) { return s.titel.index
 ok(mengeSchritt && mengeSchritt.urteil === 'unpruefbar', 'fehlende Menge bleibt „nicht prüfbar"');
 ok(mengeSchritt && !!mengeSchritt.warum, 'und sagt trotzdem, warum sie nicht prüfbar ist');
 
+/* ---------- 12) Einsatzrechner ---------- */
+console.log('12) Einsatzrechner');
+var E = require('../js/einsatz.js');
+var qeA = R.qeSeite('preis', 'JA', 0.480, 0.04).qe;   // 2.062533
+var qeB = R.qeSeite('quote', 'Back', 2.06, 0.02).qe;  // 2.038800
+
+/* Ohne Rundung muss der Einsatzrechner exakt die Panel-Aufteilung treffen. */
+var fein = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 0.01 });
+ok(Math.abs(fein.ideal1 - 49.71) < 0.01, 'ideale Aufteilung Seite 1 (' + fein.ideal1.toFixed(2) + ')');
+ok(Math.abs(fein.ideal1 + fein.ideal2 - 100) < 1e-9, 'ideale Aufteilung ergibt zusammen den Einsatz');
+ok(Math.abs(fein.idealRendite - 2.53) < 0.01, 'ideale Rendite trifft die Panel-Zahl');
+ok(Math.abs(fein.gewinn1 - fein.gewinn2) < 0.02, 'bei Cent-Rundung zahlen beide Ausgänge fast gleich');
+
+/* MIT Rundung: die Ausgänge laufen auseinander, garantiert ist der schlechtere. */
+var grob = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 10 });
+ok(grob.s1 % 10 === 0 && grob.s2 % 10 === 0, 'auf Zehner gerundet (' + grob.s1 + '/' + grob.s2 + ')');
+ok(Math.abs(grob.gewinn1 - grob.gewinn2) > 0.02, 'nach grober Rundung sind die Ausgänge NICHT mehr gleich');
+ok(Math.abs(grob.garantiert - Math.min(grob.gewinn1, grob.gewinn2)) < 1e-9, 'garantiert = der schlechtere Ausgang');
+ok(grob.garantiert < grob.bester, 'der bessere Ausgang wird nicht als Garantie verkauft');
+ok(grob.renditeEffektiv < grob.idealRendite, 'Rundung drückt die Rendite (' +
+  grob.renditeEffektiv.toFixed(2) + ' statt ' + grob.idealRendite.toFixed(2) + ')');
+ok(Math.abs(grob.rundungsverlust - (grob.idealRendite - grob.renditeEffektiv)) < 1e-9, 'Rundungsverlust korrekt beziffert');
+
+/* Der wichtige Warnfall: Rundung frisst die ganze Marge auf. */
+var duenn = E.rechne({ qe1: 2.02, qe2: 2.02, gesamt: 30, schritt: 10 });
+ok(duenn.nochArbitrage === false || duenn.garantiert <= 0,
+  'bei zu grober Rundung meldet er ehrlich: kein sicherer Gewinn mehr (' + duenn.garantiert.toFixed(2) + ')');
+
+/* Ein Einsatz von 0 darf nie entstehen — das wäre eine offene Wette. */
+var winzig = E.rechne({ qe1: 1.10, qe2: 12.0, gesamt: 10, schritt: 10 });
+ok(winzig.s1 > 0 && winzig.s2 > 0, 'keine Seite bleibt bei 0 stehen');
+
+/* Höchsteinsatz aus dem Bericht wird verglichen. */
+var ueber = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 500, schritt: 1, maxEinsatz: 240 });
+ok(ueber.ueberMax === true, 'Einsatz über dem Höchstbetrag des Berichts wird erkannt');
+var drunter = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 1, maxEinsatz: 240 });
+ok(drunter.ueberMax === false, 'Einsatz innerhalb des Höchstbetrags meldet keinen Alarm');
+var ohneMax = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 1 });
+ok(ohneMax.ueberMax === null, 'ohne Höchstbetrag wird NICHT geraten (null, nicht false)');
+
+/* Kennzahlen. */
+ok(Math.abs(E.marge(0.9753) - 2.47) < 0.01, 'Marge des Marktes = (1 − inv) × 100');
+ok(Math.abs(E.wahrscheinlichkeit(2.0) - 50) < 1e-9, 'implizite Wahrscheinlichkeit');
+var pf = E.puffer(qeA, qeB);
+ok(pf && pf.spielraumProzent > 0 && pf.spielraumProzent < 10, 'Kurspuffer plausibel (' + pf.spielraumProzent.toFixed(2) + ' %)');
+var kippt = E.puffer(1.90, 2.038800);
+ok(kippt && kippt.spielraumProzent === 0, 'ohne Vorteil ist der Puffer 0, nicht negativ');
+
+/* Gegenprobe der Kernbehauptung: Auszahlung minus Gesamteinsatz = Gewinn. */
+ok(Math.abs((grob.s1 * qeA - grob.eingesetzt) - grob.gewinn1) < 1e-9, 'Gewinn 1 = Auszahlung 1 − alles Eingesetzte');
+ok(Math.abs((grob.s2 * qeB - grob.eingesetzt) - grob.gewinn2) < 1e-9, 'Gewinn 2 = Auszahlung 2 − alles Eingesetzte');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {
