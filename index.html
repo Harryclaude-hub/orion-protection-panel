@@ -14,6 +14,7 @@
      allem und nimmt keine Klicks an. Dieses eine div löschen = Planeten
      weg, Funktion unverändert. -->
 <div class="planeten" aria-hidden="true">
+  <div class="orbitring"></div>
   <div class="planet planet-1"></div>
   <div class="planet planet-2"></div>
   <div class="planet planet-3"></div>
@@ -29,13 +30,30 @@
     </div>
     <div class="statuschip"><span class="lampe"></span>System-Status&nbsp;<b>bereit</b></div>
   </header>
-  <p class="leitsatz">
-    Das Panel SUCHT. Dieses Programm SCHÜTZT: Es rechnet jeden Fund eigenständig nach,
-    bevor Geld fließt. Kein gemeinsamer Code, keine gemeinsamen Daten, eigene Datenbank —
-    zwei getrennte Fassungen derselben Rechnung. Decken sie sich, ist die Zahl belastbar;
-    decken sie sich nicht, wird die Stelle genannt. Drei Urteile, nie zwei:
-    deckt sich · weicht ab · nicht prüfbar.
-  </p>
+  <section class="hero">
+    <div class="herotext">
+      <p class="heroleitsatz">
+        Das Panel <b>sucht</b>. Dieses Programm <b>schützt</b>: Es rechnet jeden Fund
+        eigenständig nach, bevor Geld fließt.
+      </p>
+      <p class="leise">
+        Kein gemeinsamer Code, keine gemeinsamen Daten, eigene Datenbank — zwei getrennte
+        Fassungen derselben Rechnung. Decken sie sich, ist die Zahl belastbar; decken sie
+        sich nicht, wird die Stelle genannt.
+      </p>
+      <div class="herourteile">
+        <span class="hu gruen">deckt sich</span>
+        <span class="hu rot">weicht ab</span>
+        <span class="hu orange">nicht prüfbar</span>
+        <span class="leise klein">drei Urteile, nie zwei</span>
+      </div>
+    </div>
+    <div class="herowerte">
+      <div class="hw"><span class="hwname">Prüfungen</span><b class="hwwert">98</b><span class="hwfuss">Selbsttests grün</span></div>
+      <div class="hw"><span class="hwname">Härtetest</span><b class="hwwert">13/13</b><span class="hwfuss">Verfälschungen erkannt</span></div>
+      <div class="hw"><span class="hwname">Fehlalarme</span><b class="hwwert">0</b><span class="hwfuss">bei korrektem Bericht</span></div>
+    </div>
+  </section>
 
   <h2>1 · Bericht einfügen</h2>
   <div class="karte">
