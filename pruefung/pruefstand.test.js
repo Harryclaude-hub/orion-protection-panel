@@ -215,6 +215,49 @@ ok(ergWider.warnungen.some(function (w) { return w.stufe === 'fehler' && w.text.
   'Selbstwiderspruch wird gemeldet');
 ok(ergWider.urteil.stufe === 'fehler', 'und kippt das Urteil');
 
+/* ---------- 10) Link-Prüfung ---------- */
+console.log('10) Link-Prüfung');
+var Links = require('../js/linkpruefung.js');
+var bSauber = Parser.parse(sauber.text);
+var lErg = Links.pruefen(bSauber);
+ok(lErg.length === 2, 'zwei Link-Urteile');
+ok(lErg[0].urteil === 'passt', 'Polymarket-Link passt (ist: ' + lErg[0].urteil + ')');
+ok(lErg[1].urteil === 'passt', 'Smarkets-Link passt (ist: ' + lErg[1].urteil + ')');
+
+/* Falsche Partie im Link MUSS auffallen. */
+var falschText = sauber.text.replace(
+  'https://smarkets.com/event/44991234/sport/football/fc-probe-vs-sv-muster',
+  'https://smarkets.com/event/44991234/sport/football/real-madrid-vs-barcelona');
+var ergF = Pruefer.pruefen(Parser.parse(falschText));
+var lF = ergF.links.filter(function (l) { return l.nr === 2; })[0];
+ok(lF && lF.urteil === 'falsch', 'fremde Partie im Link wird erkannt (ist: ' + (lF && lF.urteil) + ')');
+ok(ergF.urteil.stufe === 'fehler', 'falscher Link kippt das Gesamturteil');
+
+/* Falsches Buch in der Adresse MUSS auffallen. */
+var domText = sauber.text.replace(
+  'https://polymarket.com/event/fc-probe-sv-muster/fc-probe-sv-muster-winner',
+  'https://smarkets.com/event/1/sport/football/fc-probe-vs-sv-muster');
+var ergD = Pruefer.pruefen(Parser.parse(domText));
+var lD = ergD.links.filter(function (l) { return l.nr === 1; })[0];
+ok(lD && lD.urteil === 'falsch' && lD.text.indexOf('gehört aber zu') > 0, 'Buch↔Adresse-Widerspruch erkannt');
+
+/* Kalshi-Kennung und Orbit-Marktnummer: ehrlich "nicht prüfbar". */
+var kalshiSeite = { nr: 2, buch: 'Kalshi', buchNorm: 'kalshi', link: 'https://kalshi.com/markets/kxmlbgame/mlb/KXMLBGAME-25AUG17DETMIN' };
+var lK = Links.pruefeSeite(bSauber, kalshiSeite);
+ok(lK.urteil === 'unpruefbar', 'Kalshi: von außen nicht prüfbar');
+var orbitSeite = { nr: 2, buch: 'Betfair', buchNorm: 'betfair', link: 'https://www.orbitexch.com/customer/sport/1/market/1.234567890' };
+var lO = Links.pruefeSeite(bSauber, orbitSeite);
+ok(lO.urteil === 'unpruefbar' && lO.text.indexOf('1.234567890') > 0, 'Orbit: Marktnummer genannt, ehrlich nicht prüfbar');
+
+/* Fehlender Link. */
+var ohneSeite = { nr: 1, buch: 'Polymarket', buchNorm: 'polymarket', link: null };
+ok(Links.pruefeSeite(bSauber, ohneSeite).urteil === 'falsch', 'fehlender Link ist ein Verstoß');
+
+/* Sauberer Bericht bleibt nach der Link-Integration bei "deckt sich". */
+var ergNochmal = Pruefer.pruefen(bSauber);
+ok(ergNochmal.urteil.stufe === 'ok', 'sauberer Bericht weiterhin ok (ist: ' + ergNochmal.urteil.stufe + ')');
+ok(ergNochmal.schritte.every(function (s) { return !!s.gruppe; }), 'jeder Schritt gehört zu einem Rechnungs-Block');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {

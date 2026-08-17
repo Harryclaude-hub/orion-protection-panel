@@ -21,6 +21,9 @@
   var R = (typeof module === 'object' && module.exports)
     ? require('./rechnung.js')
     : welt.PS.rechnung;
+  var L = (typeof module === 'object' && module.exports)
+    ? require('./linkpruefung.js')
+    : welt.PS.linkpruefung;
 
   /* Toleranzen: alle Panel-Werte sind GERUNDET gedruckt (Effektivquote 3,
    * Kehrwertsumme 4, Rendite/Beträge 2 Nachkommastellen). Die Toleranz
@@ -264,8 +267,15 @@
       if (s.menge === null && s.mengeText) {
         warnungen.push({ stufe: 'warnung', text: 'Seite ' + s.nr + ' (' + s.buch + '): Handelbare Menge unbekannt — unbekannt ist NICHT unbegrenzt.' });
       }
-      if (!s.link) {
-        warnungen.push({ stufe: 'warnung', text: 'Seite ' + s.nr + ' (' + s.buch + '): Link fehlt im Bericht — beide Links sind Pflicht.' });
+    });
+
+    /* ---- Link-Prüfung: führen beide Links zur Partie? ----
+     * Ein falscher Link wiegt wie ein Rechenfehler (Panel-Regel 8.3:
+     * beide Links müssen immer denselben Markt treffen). */
+    var links = L ? L.pruefen(bericht) : [];
+    links.forEach(function (l) {
+      if (l.urteil === 'falsch') {
+        warnungen.push({ stufe: 'fehler', text: 'Link Seite ' + l.nr + ' (' + (l.buch || '?') + '): ' + l.text });
       }
     });
 
@@ -337,23 +347,34 @@
     });
 
     /* ---- 5) Gesamturteil ---- */
-    var abw = 0, unpr = 0;
+    var abw = 0, unpr = 0, boese = 0;
     liste.forEach(function (s) {
       if (s.urteil === 'abweichung') abw++;
       if (s.urteil === 'unpruefbar') unpr++;
     });
-    warnungen.forEach(function (w) { if (w.stufe === 'fehler') abw++; });
+    warnungen.forEach(function (w) { if (w.stufe === 'fehler') boese++; });
 
     var urteil;
-    if (abw > 0) {
-      urteil = { stufe: 'fehler', text: 'WAHRSCHEINLICH RECHENFEHLER — ' + abw + ' Stelle(n) decken sich nicht. Die betroffenen Schritte sind markiert; dort von Hand nachrechnen und ausbessern.' };
+    if (abw > 0 || boese > 0) {
+      var teile = [];
+      if (abw > 0) teile.push(abw + ' Rechenstelle(n) decken sich nicht — dort von Hand nachrechnen und ausbessern');
+      if (boese > 0) teile.push(boese + ' harte(r) Befund(e) daneben (falscher Link oder Selbstwiderspruch des Berichts)');
+      urteil = { stufe: 'fehler', text: 'WAHRSCHEINLICH FEHLER: ' + teile.join(' · ') + '. Die betroffenen Stellen sind rot markiert.' };
     } else if (unpr > 0) {
       urteil = { stufe: 'teilweise', text: 'Rechnung deckt sich, soweit prüfbar — ' + unpr + ' Schritt(e) waren mangels Angaben nicht prüfbar.' };
     } else {
       urteil = { stufe: 'ok', text: 'Die Rechnung deckt sich vollständig mit der eigenen Nachrechnung.' };
     }
 
-    return { schritte: liste, warnungen: warnungen, urteil: urteil, eigen: eigen, qe1: qe1, qe2: qe2 };
+    /* Die Rechnungen TRENNEN: jeder Schritt gehört zu genau einem Block. */
+    liste.forEach(function (s) {
+      if (s.titel.indexOf('Seite 1') === 0) s.gruppe = 'Rechnung Seite 1';
+      else if (s.titel.indexOf('Seite 2') === 0) s.gruppe = 'Rechnung Seite 2';
+      else if (s.titel.indexOf('Querprobe') === 0) s.gruppe = 'Querproben (formelunabhängig)';
+      else s.gruppe = 'Die Verknüpfung — beide Seiten zusammen';
+    });
+
+    return { schritte: liste, warnungen: warnungen, urteil: urteil, eigen: eigen, qe1: qe1, qe2: qe2, links: links };
   }
 
   var api = { pruefen: pruefen, TOL: TOL };

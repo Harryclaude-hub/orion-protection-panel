@@ -5,11 +5,10 @@
  *     Nutzer sieht seine Zeilen — Row Level Security)
  *   - ohne Anmeldung: nur im Browser-Speicher dieses Geräts
  *
- * ABSICHTLICH GETRENNT vom Orion Panel: dieses Modul liest und schreibt
- * KEINE einzige orion_*-Tabelle. Gemeinsam ist nur das Supabase-Projekt
- * (ein kostenloses Projekt, zwei getrennte Programme). Kein Takt, kein
- * Abgleich, keine Kopplung — der Prüfstand läuft auch, wenn das Panel
- * steht, und umgekehrt.
+ * ABSICHTLICH GETRENNT vom Orion Panel — bis in die Datenbank: der
+ * Prüfstand hat sein EIGENES Supabase-Projekt (`orion-pruefstand`,
+ * jjvceatwrzxycrzmowbt). Kein gemeinsames Projekt, keine gemeinsame
+ * Tabelle, kein Takt, kein Abgleich. Fällt eines aus, läuft das andere.
  *
  * Ohne Fremdbibliothek: Anmeldung und Ablage laufen über die offenen
  * HTTP-Schnittstellen von Supabase (auth/v1 + rest/v1) mit fetch.
@@ -17,8 +16,8 @@
 (function (welt) {
   'use strict';
 
-  var URL_BASIS = 'https://noexklrgtqveiclijdwp.supabase.co';
-  var SCHLUESSEL = 'sb_publishable_NrgVUoZhe-uN8U8j41P17Q_9cZgUd6M';
+  var URL_BASIS = 'https://jjvceatwrzxycrzmowbt.supabase.co';
+  var SCHLUESSEL = 'sb_publishable_QTVkKApv-zS4SEoeavxcZA_JiF-wqvg';
   var ABLAGE = 'pruefstand_sitzung';       // access/refresh-Token im localStorage
   var LOKAL = 'pruefstand_verlauf_lokal';  // Verlauf ohne Anmeldung
   var LOKAL_MAX = 50;

@@ -2,7 +2,10 @@
 
 Unabhängige Nachrechnung für die Prüfberichte des **Orion Panel Pro** —
 bewusst ein **getrenntes Programm**: das Panel sucht, der Prüfstand prüft.
-Kein gemeinsamer Code, keine gemeinsamen Daten, kein Takt, keine Kopplung.
+Kein gemeinsamer Code, keine gemeinsamen Daten, kein Takt, keine Kopplung —
+**bis in die Datenbank: eigenes Supabase-Projekt** (`orion-pruefstand`,
+`jjvceatwrzxycrzmowbt`), nicht das Panel-Projekt. Es wird NICHTS automatisch
+vom Panel übernommen; der einzige Weg hinein ist der eingefügte Text.
 Fällt eines aus, läuft das andere weiter.
 
 **Live:** https://saifokaram1-hub.github.io/orion-pruefstand/
@@ -22,7 +25,14 @@ Fällt eines aus, läuft das andere weiter.
    zahlen gleich aus (S1·qE1 = S2·qE2 = Auszahlung), Rendite passt zur
    Kehrwertsumme, Gewinn passt zum Max-Einsatz, Währungslogik (Dollar↔Euro
    über den EZB-Kurs des Berichts).
-5. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
+5. **Link-Prüfung:** Führen beide Links zur Partie? Stufe 1: gehört die
+   Adresse zum genannten Buch (Polymarket↔polymarket.com, Betfair↔Orbit …)?
+   Stufe 2: finden sich die Wörter des Link-Pfads in Spiel/Partie wieder
+   (Stoppwörter nach Panel-Lehre: reine Zahlen, „will/does/…", vs/fc/…)?
+   Kalshi-Kennungen und Orbit-Marktnummern tragen keine Wörter — dort steht
+   ehrlich „von außen nicht prüfbar". Beim Aktualitäts-Abruf nennt Polymarket
+   zusätzlich die FRAGE des Marktes, den der Link öffnet — der schärfste Beleg.
+6. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
    sind — mit den Erfahrungswerten der Panel-Messungen vom 13.08.2026:
    - Kurs länger als 15 Minuten unverändert (7 von 8 falschen Funden kamen
      von einem klebenden Kurs)
@@ -52,6 +62,7 @@ Fällt eines aus, läuft das andere weiter.
 |---|---|
 | `js/rechnung.js` | eigenständige Zweitfassung der Formeln (kein Panel-Code) |
 | `js/parser.js` | zerlegt den kopierten Bericht, rät nie |
+| `js/linkpruefung.js` | Buch↔Adresse + Wortabgleich der Links, drei Zustände |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
 | `js/aktualitaet.js` | einmaliger Anbieter-Abruf + Neuberechnung |
 | `js/verlauf.js` | Anmeldung (Supabase auth/v1) + Ablage (rest/v1), localStorage-Rückfall |
@@ -60,10 +71,11 @@ Fällt eines aus, läuft das andere weiter.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js` — **54 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js` — **65 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
-  Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung.
+  Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde
+  Partie im Link, falsches Buch in der Adresse, fehlender Link.
 - Im Browser gegen einen Muster-Bericht im exakten Panel-Format verifiziert;
   Polymarket-Aktualität live gegen die echte Gamma/CLOB-Schnittstelle
   gemessen (17.08.2026).
@@ -73,7 +85,8 @@ Fällt eines aus, läuft das andere weiter.
 
 ## Datenbank
 
-Supabase-Projekt `noexklrgtqveiclijdwp`, **eigene** Tabelle
-`pruefstand_verlauf` (id, nutzer → auth.users, titel, urteil, urteil_text,
-rendite, nummer, bericht, erstellt) mit RLS auf `nutzer = auth.uid()`.
-Keine `orion_*`-Tabelle wird gelesen oder geschrieben.
+**Eigenes** Supabase-Projekt `orion-pruefstand` (`jjvceatwrzxycrzmowbt`) —
+getrennt vom Panel-Projekt. Eine Tabelle `pruefstand_verlauf` (id, nutzer →
+auth.users, titel, urteil, urteil_text, rendite, nummer, bericht, erstellt)
+mit RLS auf `nutzer = auth.uid()`. Das Panel-Projekt wird von diesem
+Programm weder gelesen noch geschrieben.

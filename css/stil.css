@@ -143,6 +143,11 @@ input[type=email], input[type=password], input[type=text] {
 .marke.abweichung { color: var(--rot); border-color: var(--rot); }
 .marke.unpruefbar { color: var(--orange); border-color: var(--orange); }
 .kommentar { color: var(--orange); font-size: 0.88rem; margin-top: 4px; }
+.gruppentitel {
+  font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--leise); margin: 18px 0 4px; padding-left: 2px;
+}
+.schritt + .gruppentitel, #rechenweg > .gruppentitel:first-child { margin-top: 8px; }
 
 .warnung {
   border-radius: 12px; padding: 10px 14px; margin: 6px 0;

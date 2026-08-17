@@ -80,6 +80,7 @@
               return { status: 'unpruefbar', text: 'Das Orderbuch nennt keinen gültigen Briefkurs.' };
             }
             return { status: 'ok', wert: preis, ausgangName: outcomes[idx] || null,
+                     frage: markt.question || markt.title || null,
                      quelle: 'CLOB-Orderbuch, Briefkurs (side=sell)' };
           });
       })

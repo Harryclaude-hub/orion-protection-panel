@@ -97,9 +97,21 @@
       '<div class="karte"><div class="kartentitel">Was das Panel behauptet</div>' + panel.join('') + '</div>';
   }
 
-  /* ---------- Rechenweg ---------- */
+  /* ---------- Rechenweg (in getrennten Rechnungs-Blöcken) ---------- */
   function rechenwegZeichnen(erg) {
+    var letzteGruppe = null;
     var zeilen = erg.schritte.map(function (s) {
+      var kopf = '';
+      if (s.gruppe && s.gruppe !== letzteGruppe) {
+        letzteGruppe = s.gruppe;
+        kopf = '<div class="gruppentitel">' + txt(s.gruppe) + '</div>';
+      }
+      return kopf + schrittHtml(s);
+    });
+    el('rechenweg').innerHTML = zeilen.join('');
+  }
+
+  function schrittHtml(s) {
       var u = s.urteil || 'unpruefbar';
       var wert = '';
       if (s.ist !== undefined && s.ist !== null && isFinite(s.ist)) {
@@ -119,8 +131,20 @@
         (wert ? '<div>' + wert + '</div>' : '') +
         (s.kommentar ? '<div class="kommentar">' + txt(s.kommentar) + '</div>' : '') +
         '</div>';
-    });
-    el('rechenweg').innerHTML = zeilen.join('');
+  }
+
+  /* ---------- Link-Prüfung ---------- */
+  function linksZeichnen(erg) {
+    if (!erg.links || !erg.links.length) {
+      el('linkpruefung').innerHTML = '<div class="leise">Keine Links im Bericht.</div>';
+      return;
+    }
+    el('linkpruefung').innerHTML = erg.links.map(function (l) {
+      var klasse = l.urteil === 'passt' ? 'gruen' : (l.urteil === 'falsch' ? 'rot' : 'orange');
+      var marke = l.urteil === 'passt' ? 'passt' : (l.urteil === 'falsch' ? 'FALSCHER LINK' : 'von außen nicht prüfbar');
+      return '<div class="warnung ' + klasse + '"><b>Seite ' + txt(l.nr) + ' (' + txt(l.buch || '?') + ') — ' +
+        txt(marke) + ':</b> ' + txt(l.text) + '</div>';
+    }).join('');
   }
 
   function warnungenZeichnen(erg) {
@@ -161,6 +185,12 @@
           ' <span class="leise">(Bericht: ' + txt(f(alt, seite.art === 'preis' ? 3 : 2)) + ')</span> — ' +
           (gleich ? '<span class="gruen">unverändert</span>' : '<span class="orange">hat sich bewegt</span>') +
           (s.quelle ? '<div class="leise klein">Quelle: ' + txt(s.quelle) + '</div>' : '');
+        if (s.frage) {
+          /* Der Anbieter nennt die Frage des Marktes, den der Link öffnet —
+           * der direkteste Beleg, ob der Link zur Partie führt. */
+          inhalt += '<div class="klein">Der Link öffnet: „' + txt(s.frage) + '"' +
+            (b.titel ? ' <span class="leise">(Bericht: „' + txt(b.titel) + '")</span>' : '') + '</div>';
+        }
       } else {
         inhalt = txt(s.text || '');
       }
@@ -244,6 +274,7 @@
     urteilZeichnen(erg, b);
     aufteilungZeichnen(b);
     rechenwegZeichnen(erg);
+    linksZeichnen(erg);
     warnungenZeichnen(erg);
     el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Noch nicht abgerufen. Der Abruf passiert nur auf Klick, einmalig.</div>';
 
