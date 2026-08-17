@@ -1,14 +1,26 @@
-# Orion Prüfstand
+# Orion Protection Panel
 
-Unabhängige Nachrechnung für die Prüfberichte des **Orion Panel Pro** —
-bewusst ein **getrenntes Programm**: das Panel sucht, der Prüfstand prüft.
+Tactical Verification Interface — unabhängige Nachrechnung für die
+Prüfberichte des **Orion Panel Pro** (hieß bis 17.08.2026 „Orion Prüfstand").
+Bewusst ein **getrenntes Programm**: das Panel sucht, dieses Programm schützt.
 Kein gemeinsamer Code, keine gemeinsamen Daten, kein Takt, keine Kopplung —
 **bis in die Datenbank: eigenes Supabase-Projekt** (`orion-pruefstand`,
 `jjvceatwrzxycrzmowbt`), nicht das Panel-Projekt. Es wird NICHTS automatisch
 vom Panel übernommen; der einzige Weg hinein ist der eingefügte Text.
 Fällt eines aus, läuft das andere weiter.
 
-**Live:** https://saifokaram1-hub.github.io/orion-pruefstand/
+**Live:** https://saifokaram1-hub.github.io/orion-protection-panel/
+
+## Design und Funktion laufen getrennt (Karams Regel)
+
+Die Optik (Navy/Cyan-Taktik-HUD nach Referenzbild, Logo, UTC-Uhr, Militär-Ton
+„Jawohl, Chef") lebt NUR in `css/stil.css`, `logo.svg` und `js/schmuck.js`.
+Diese Dateien sind **löschbar** — fällt eine weg, fehlt Schmuck, nie ein Wert
+und nie eine Rechnung. Alle Farben sind Tokens am Kopf von `stil.css`; ein
+Thema-Wechsel tauscht nur die Tokens, nie Markup oder Logik. Keine schweren
+Effekte: die Seite bleibt auf einem normalen Laptop flüssig, Animationen sind
+sparsame CSS-Arbeit mit `prefers-reduced-motion`-Rücksicht. Nach jeder
+Designarbeit laufen die Funktions-Selbsttests.
 
 ## Was es tut
 
@@ -67,7 +79,9 @@ Fällt eines aus, läuft das andere weiter.
 | `js/aktualitaet.js` | einmaliger Anbieter-Abruf + Neuberechnung |
 | `js/verlauf.js` | Anmeldung (Supabase auth/v1) + Ablage (rest/v1), localStorage-Rückfall |
 | `js/oberflaeche.js` | zeichnet alles, rechnet nichts |
-| `css/stil.css` | ruhiges Militär-Graphit, Buchfarben wie im Panel, keine Animationen |
+| `css/stil.css` | Design-Schicht: Navy/Cyan-Taktik-HUD, alle Farben als Tokens, löschbar |
+| `js/schmuck.js` | Design-Schicht: nur die UTC-Uhr der Fußleiste, löschbar |
+| `logo.svg` | Logo und Favicon (Delta im Taktik-Rahmen), löschbar |
 
 ## Wie es geprüft wurde
 

@@ -1,32 +1,50 @@
-/* ORION PRÜFSTAND — Stil
+/* ORION PROTECTION PANEL — Stil (Design-Schicht, LÖSCHBAR)
  *
- * Militärisch, aber RUHIG: mittel-dunkles Graphit statt Nachtblau, keine
- * Animationen, kein Radar, kein Neon. Die Buchfarben sind dieselben wie im
- * Panel (Polymarket blau, Kalshi tealgrün, Smarkets grün, Betfair gelb),
- * damit das Auge nicht umlernen muss. Runde Ecken: 12 px Flächen, 8 px Chips.
+ * Taktisches Kommando-Interface nach Karams Referenzbild vom 17.08.2026:
+ * tiefes Navy, Cyan-Akzente, schmale GROSSBUCHSTABEN-Beschriftungen mit
+ * Sperrung, Karten mit Eckschnitt, ruhige HUD-Leisten.
+ *
+ * EISERNE REGEL (Karams Anweisung, im Wissen hinterlegt): Diese Datei
+ * berührt KEINE Funktion, KEIN Tempo, KEINE Struktur. Alle Farben sind
+ * Tokens ganz oben — ein Thema-Wechsel tauscht NUR diese Tokens. Effekte
+ * sind reine CSS-Arbeit, sparsam, mit Rücksicht auf reduced-motion; die
+ * Seite bleibt auf einem normalen Laptop flüssig.
  */
 :root {
-  --grund:      #24262B;
-  --karte:      #2F3339;
-  --karte-tief: #292C31;
-  --rand:       #3C4149;
-  --text:       #E8EAED;
-  --leise:      #A6ADB8;
-  --gold:       #C8AC63;
-  --gruen:      #8FC178;
-  --orange:     #E0A458;
-  --rot:        #E07A7A;
+  /* Grundton — Navy-Tiefe wie im Referenzbild */
+  --grund:      #070D18;
+  --grund-tief: #04121F;
+  --karte:      #0D1726;
+  --karte-tief: #0A1220;
+  --rand:       #22384F;
+  --text:       #E7F1FB;
+  --leise:      #89A2BC;
+
+  /* Signal — Cyan führt */
+  --signal:     #3CC9F5;
+  --signal-tief:#1B7FA6;
+  --gold:       #E3A94A;
+  --gruen:      #2FD3A7;
+  --orange:     #F0A73C;
+  --rot:        #FF6B85;
+
+  /* Bücher (wie im Panel, damit das Auge nicht umlernt) */
   --pm: #6C93E8;
   --ka: #3FB59A;
   --sm: #5BBE7C;
   --bf: #E8C15A;
-  --xx: #9AA3AF;
+  --xx: #89A2BC;
+
+  --eck: 12px;   /* Eckschnitt der Karten */
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
-  background: var(--grund);
+  background:
+    radial-gradient(1100px 500px at 75% -150px, rgba(60, 201, 245, 0.07), transparent 60%),
+    linear-gradient(180deg, #0A1322 0%, var(--grund) 240px);
+  background-color: var(--grund);
   color: var(--text);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 16px;
@@ -39,64 +57,106 @@ body {
 .orange { color: var(--orange); }
 .rot { color: var(--rot); }
 
-.rahmen { max-width: 1060px; margin: 0 auto; padding: 20px 16px 80px; }
+.rahmen { max-width: 1060px; margin: 0 auto; padding: 20px 16px 90px; }
 
-header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+/* ---------- Kopf: Logo + Name + Status, wie die Titelleiste im Bild -- */
+header {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--rand); padding-bottom: 14px; margin-bottom: 10px;
+}
+.logo { width: 46px; height: 46px; flex: 0 0 auto; display: block; }
+.kopftext { flex: 1 1 auto; min-width: 240px; }
 header h1 {
-  margin: 0; font-size: 1.5rem; letter-spacing: 0.14em; font-weight: 700;
-  color: var(--gold); text-transform: uppercase;
+  margin: 0; font-size: 1.45rem; letter-spacing: 0.22em; font-weight: 700;
+  color: var(--text); text-transform: uppercase; line-height: 1.15;
 }
-header .untertitel { color: var(--leise); }
-.leitsatz { color: var(--leise); margin: 0 0 18px; font-size: 0.92rem; }
+header .untertitel {
+  display: block; color: var(--signal); font-size: 0.72rem;
+  letter-spacing: 0.28em; text-transform: uppercase; margin-top: 3px;
+}
+.statuschip {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--leise); border: 1px solid var(--rand); border-radius: 4px;
+  padding: 8px 12px; background: var(--karte-tief);
+}
+.statuschip .lampe {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gruen); box-shadow: 0 0 8px var(--gruen);
+  animation: lampenpuls 2.4s ease-in-out infinite;
+}
+.statuschip b { color: var(--text); letter-spacing: 0.18em; }
+@keyframes lampenpuls { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
+.leitsatz { color: var(--leise); margin: 10px 0 18px; font-size: 0.92rem; }
+
+/* ---------- Abschnitts-Titel: Cyan-Marke + Sperrung ---------- */
 h2 {
-  font-size: 1.02rem; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--gold); margin: 30px 0 10px; font-weight: 600;
-  border-bottom: 1px solid var(--rand); padding-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.92rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text); margin: 32px 0 10px; font-weight: 600;
+  border-bottom: 1px solid var(--rand); padding-bottom: 8px;
+}
+h2::before {
+  content: ''; width: 8px; height: 8px; flex: 0 0 auto;
+  background: var(--signal); box-shadow: 0 0 7px rgba(60, 201, 245, 0.8);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
+/* ---------- Karten: Eckschnitt wie die Konsolen im Bild ---------- */
 .karte {
-  background: var(--karte); border: 1px solid var(--rand);
-  border-radius: 12px; padding: 14px 16px; margin: 10px 0;
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+  border: 1px solid var(--rand);
+  clip-path: polygon(var(--eck) 0, 100% 0, 100% calc(100% - var(--eck)), calc(100% - var(--eck)) 100%, 0 100%, 0 var(--eck));
+  padding: 14px 16px; margin: 10px 0;
 }
 .kartentitel {
-  font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--leise); margin-bottom: 8px;
+  font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--signal); margin-bottom: 8px;
 }
 .trenn { border-top: 1px solid var(--rand); margin: 10px 0; }
 
+/* ---------- Eingabe ---------- */
 textarea {
   width: 100%; min-height: 200px; resize: vertical;
-  background: var(--karte-tief); color: var(--text);
-  border: 1px solid var(--rand); border-radius: 12px;
+  background: var(--grund-tief); color: var(--text);
+  border: 1px solid var(--rand); border-radius: 4px;
   padding: 12px 14px; font-family: Consolas, 'Cascadia Mono', monospace;
   font-size: 0.86rem; line-height: 1.45;
 }
-textarea:focus, input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+textarea:focus, input:focus { outline: 2px solid var(--signal); outline-offset: 1px; }
 
+/* ---------- Knöpfe: Konsolentasten, Cyan führt ---------- */
 .knopf {
-  display: inline-block; cursor: pointer; border: 1px solid var(--rand);
+  display: inline-block; cursor: pointer;
+  border: 1px solid var(--rand);
   background: var(--karte); color: var(--text);
-  border-radius: 10px; padding: 10px 18px; font-size: 0.95rem;
+  border-radius: 4px; padding: 10px 18px;
+  font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase;
   min-height: 44px; text-decoration: none;
 }
-.knopf:hover { border-color: var(--gold); }
-.knopf.haupt { background: var(--gold); color: #1F2125; border-color: var(--gold); font-weight: 700; }
-.knopf.haupt:hover { filter: brightness(1.06); }
-.knopf.klein { min-height: 0; padding: 4px 10px; font-size: 0.82rem; border-radius: 8px; }
+.knopf:hover { border-color: var(--signal); color: var(--signal); }
+.knopf.haupt {
+  background: var(--signal); color: #04121F; border-color: var(--signal);
+  font-weight: 700; box-shadow: 0 0 14px rgba(60, 201, 245, 0.35);
+}
+.knopf.haupt:hover { filter: brightness(1.08); color: #04121F; }
+.knopf.klein { min-height: 0; padding: 4px 10px; font-size: 0.72rem; }
 .knopf.rotrand:hover { border-color: var(--rot); color: var(--rot); }
 .knopfzeile { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
 
 input[type=email], input[type=password], input[type=text] {
-  background: var(--karte-tief); color: var(--text);
-  border: 1px solid var(--rand); border-radius: 10px;
+  background: var(--grund-tief); color: var(--text);
+  border: 1px solid var(--rand); border-radius: 4px;
   padding: 10px 12px; font-size: 0.95rem; min-height: 44px;
 }
 
+/* ---------- Chips ---------- */
 .chip {
-  display: inline-block; border-radius: 8px; padding: 2px 10px;
-  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em;
-  background: var(--karte-tief); border: 1px solid var(--rand);
+  display: inline-block; border-radius: 3px; padding: 2px 10px;
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--grund-tief); border: 1px solid var(--rand);
 }
 .chip.pm { color: var(--pm); border-color: var(--pm); }
 .chip.ka { color: var(--ka); border-color: var(--ka); }
@@ -104,70 +164,104 @@ input[type=email], input[type=password], input[type=text] {
 .chip.bf { color: var(--bf); border-color: var(--bf); }
 .chip.xx { color: var(--xx); }
 
+/* ---------- Seiten-Karten ---------- */
 .seiten { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 760px) { .seiten { grid-template-columns: 1fr; } }
 .karte.seite { margin: 0; }
-.rand-pm { border-left: 3px solid var(--pm); }
-.rand-ka { border-left: 3px solid var(--ka); }
-.rand-sm { border-left: 3px solid var(--sm); }
-.rand-bf { border-left: 3px solid var(--bf); }
+.rand-pm { box-shadow: inset 3px 0 0 var(--pm); }
+.rand-ka { box-shadow: inset 3px 0 0 var(--ka); }
+.rand-sm { box-shadow: inset 3px 0 0 var(--sm); }
+.rand-bf { box-shadow: inset 3px 0 0 var(--bf); }
 .seitekopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 
 .feld { display: flex; gap: 12px; padding: 3px 0; align-items: baseline; flex-wrap: wrap; }
-.feldname { flex: 0 0 220px; color: var(--leise); font-size: 0.88rem; }
+.feldname {
+  flex: 0 0 220px; color: var(--leise); font-size: 0.74rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
 .feldwert { flex: 1 1 auto; min-width: 160px; }
 @media (max-width: 560px) { .feldname { flex-basis: 100%; } }
 
-.urteil { border-radius: 12px; padding: 14px 16px; margin: 12px 0; border: 1px solid var(--rand); background: var(--karte); }
-.urteil.gruen { border-color: var(--gruen); }
-.urteil.rot { border-color: var(--rot); }
-.urteil.orange { border-color: var(--orange); }
-.urteiltitel { font-weight: 700; letter-spacing: 0.08em; margin-bottom: 4px; }
+/* ---------- Urteil ---------- */
+.urteil {
+  clip-path: polygon(var(--eck) 0, 100% 0, 100% calc(100% - var(--eck)), calc(100% - var(--eck)) 100%, 0 100%, 0 var(--eck));
+  padding: 14px 16px; margin: 12px 0; border: 1px solid var(--rand);
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+}
+.urteil.gruen { border-color: var(--gruen); box-shadow: inset 3px 0 0 var(--gruen); }
+.urteil.rot { border-color: var(--rot); box-shadow: inset 3px 0 0 var(--rot); }
+.urteil.orange { border-color: var(--orange); box-shadow: inset 3px 0 0 var(--orange); }
+.urteiltitel { font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
 .urteil.gruen .urteiltitel { color: var(--gruen); }
 .urteil.rot .urteiltitel { color: var(--rot); }
 .urteil.orange .urteiltitel { color: var(--orange); }
 
-.schritt {
-  background: var(--karte); border: 1px solid var(--rand); border-left-width: 3px;
-  border-radius: 12px; padding: 10px 14px; margin: 8px 0;
+/* ---------- Rechenweg ---------- */
+.gruppentitel {
+  font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--signal); margin: 20px 0 4px; padding-left: 2px;
 }
-.schritt.ok { border-left-color: var(--gruen); }
-.schritt.abweichung { border-left-color: var(--rot); }
-.schritt.unpruefbar { border-left-color: var(--orange); }
+.schritt {
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+  border: 1px solid var(--rand);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  padding: 10px 14px; margin: 8px 0;
+}
+.schritt.ok { box-shadow: inset 3px 0 0 var(--gruen); }
+.schritt.abweichung { box-shadow: inset 3px 0 0 var(--rot); }
+.schritt.unpruefbar { box-shadow: inset 3px 0 0 var(--orange); }
 .schrittkopf { display: flex; gap: 10px; align-items: center; margin-bottom: 3px; flex-wrap: wrap; }
 .marke {
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  border-radius: 8px; padding: 1px 8px; border: 1px solid;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  border-radius: 3px; padding: 1px 8px; border: 1px solid;
 }
 .marke.ok { color: var(--gruen); border-color: var(--gruen); }
 .marke.abweichung { color: var(--rot); border-color: var(--rot); }
 .marke.unpruefbar { color: var(--orange); border-color: var(--orange); }
 .kommentar { color: var(--orange); font-size: 0.88rem; margin-top: 4px; }
-.gruppentitel {
-  font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--leise); margin: 18px 0 4px; padding-left: 2px;
-}
-.schritt + .gruppentitel, #rechenweg > .gruppentitel:first-child { margin-top: 8px; }
 
+/* ---------- Warnungen / Links ---------- */
 .warnung {
-  border-radius: 12px; padding: 10px 14px; margin: 6px 0;
-  background: var(--karte); border: 1px solid var(--rand); border-left-width: 3px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  padding: 10px 14px; margin: 6px 0;
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+  border: 1px solid var(--rand);
 }
-.warnung.fehler, .warnung.rot { border-left-color: var(--rot); }
-.warnung.warnung, .warnung.orange { border-left-color: var(--orange); }
-.warnung.hinweis { border-left-color: var(--leise); }
-.warnung.gruen { border-left-color: var(--gruen); }
+.warnung.fehler, .warnung.rot { box-shadow: inset 3px 0 0 var(--rot); }
+.warnung.warnung, .warnung.orange { box-shadow: inset 3px 0 0 var(--orange); }
+.warnung.hinweis { box-shadow: inset 3px 0 0 var(--rand); }
+.warnung.gruen { box-shadow: inset 3px 0 0 var(--gruen); }
 
+/* ---------- Verlauf ---------- */
 .verlaufzeile {
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  background: var(--karte); border: 1px solid var(--rand);
-  border-radius: 12px; padding: 8px 12px; margin: 6px 0;
+  background: var(--karte-tief); border: 1px solid var(--rand);
+  border-radius: 4px; padding: 8px 12px; margin: 6px 0;
 }
 .verlauftitel { flex: 1 1 240px; }
 .punkt { width: 10px; height: 10px; border-radius: 50%; background: var(--xx); flex: 0 0 auto; }
-.punkt.gruen { background: var(--gruen); }
-.punkt.rot { background: var(--rot); }
-.punkt.orange { background: var(--orange); }
+.punkt.gruen { background: var(--gruen); box-shadow: 0 0 6px var(--gruen); }
+.punkt.rot { background: var(--rot); box-shadow: 0 0 6px var(--rot); }
+.punkt.orange { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
 
-footer { margin-top: 46px; color: var(--leise); font-size: 0.84rem; border-top: 1px solid var(--rand); padding-top: 12px; }
-footer a { color: var(--gold); }
+/* ---------- HUD-Fußleiste wie im Referenzbild ---------- */
+footer { margin-top: 46px; }
+.hud {
+  display: flex; flex-wrap: wrap; gap: 1px;
+  border: 1px solid var(--rand); background: var(--rand);
+  clip-path: polygon(var(--eck) 0, 100% 0, 100% calc(100% - var(--eck)), calc(100% - var(--eck)) 100%, 0 100%, 0 var(--eck));
+}
+.hudfeld { flex: 1 1 180px; background: var(--karte-tief); padding: 10px 14px; min-width: 150px; }
+.hudname {
+  font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--leise); margin-bottom: 2px;
+}
+.hudwert { font-family: Consolas, 'Cascadia Mono', monospace; font-size: 0.95rem; color: var(--text); }
+.hudwert .gruen { color: var(--gruen); }
+.fussnote { color: var(--leise); font-size: 0.8rem; margin-top: 10px; }
+.fussnote a { color: var(--signal); }
+
+/* ---------- Ruhe für alle, die Bewegung abgeschaltet haben ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .statuschip .lampe { animation: none; }
+}

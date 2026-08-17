@@ -4,20 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Orion Prüfstand — unabhängige Nachrechnung</title>
+  <title>Orion Protection Panel — Tactical Verification Interface</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="css/stil.css">
 </head>
 <body>
 <div class="rahmen">
 
   <header>
-    <h1>Orion Prüfstand</h1>
-    <span class="untertitel">unabhängige Nachrechnung — bewusst getrennt vom Panel</span>
+    <img class="logo" src="logo.svg" alt="Orion Protection Panel">
+    <div class="kopftext">
+      <h1>Orion Protection Panel</h1>
+      <span class="untertitel">Tactical Verification Interface · unabhängige Nachrechnung</span>
+    </div>
+    <div class="statuschip"><span class="lampe"></span>System-Status&nbsp;<b>bereit</b></div>
   </header>
   <p class="leitsatz">
-    Das Panel SUCHT. Dieses Programm PRÜFT. Es teilt keinen Code und keine Daten mit dem
-    Panel — zwei getrennte Fassungen derselben Rechnung. Decken sie sich, ist die Zahl
-    belastbar; decken sie sich nicht, wird die Stelle genannt. Drei Urteile, nie zwei:
+    Das Panel SUCHT. Dieses Programm SCHÜTZT: Es rechnet jeden Fund eigenständig nach,
+    bevor Geld fließt. Kein gemeinsamer Code, keine gemeinsamen Daten, eigene Datenbank —
+    zwei getrennte Fassungen derselben Rechnung. Decken sie sich, ist die Zahl belastbar;
+    decken sie sich nicht, wird die Stelle genannt. Drei Urteile, nie zwei:
     deckt sich · weicht ab · nicht prüfbar.
   </p>
 
@@ -29,10 +35,10 @@
       Gebühren, Effektivquoten, Links, Zeiten, Rechnung.
     </p>
     <textarea id="eingabe" spellcheck="false"
-      placeholder="Hier den kopierten Prüfbericht einfügen (Strg+V) …"></textarea>
+      placeholder="Bericht hier einfügen (Strg+V), Chef …"></textarea>
     <div class="knopfzeile">
-      <button type="button" class="knopf haupt" id="pruefen">Aufteilen &amp; nachrechnen</button>
-      <button type="button" class="knopf" id="leeren">Leeren</button>
+      <button type="button" class="knopf haupt" id="pruefen">Prüfbefehl ausführen</button>
+      <button type="button" class="knopf" id="leeren">Tafel räumen</button>
       <span class="leise" id="eingabe-hinweis"></span>
     </div>
   </div>
@@ -101,10 +107,18 @@
   </div>
 
   <footer>
-    Orion Prüfstand · prüft Berichte des Orion Panel Pro (Knopf „Kopieren") ·
-    Formeln: Effektivquote nach Gebühr, Kehrwertsumme, Aufteilung auf gleiche Auszahlung ·
-    Erfahrungswerte aus den Panel-Messungen vom 13.08.2026 ·
-    keine Kopplung an den Scanner, kein Takt, keine Panel-Daten.
+    <div class="hud">
+      <div class="hudfeld"><div class="hudname">Plattform</div><div class="hudwert">Orion Protection Panel</div></div>
+      <div class="hudfeld"><div class="hudname">Formeln</div><div class="hudwert"><span class="gruen">belegt</span> · 65-fach getestet</div></div>
+      <div class="hudfeld"><div class="hudname">UTC Zeit</div><div class="hudwert" id="hud-uhr">—</div></div>
+      <div class="hudfeld"><div class="hudname">Kopplung zum Scanner</div><div class="hudwert">keine — eigener Code, eigene Datenbank</div></div>
+    </div>
+    <div class="fussnote">
+      Prüft Berichte des Orion Panel Pro (Knopf „Kopieren") · Effektivquote nach Gebühr,
+      Kehrwertsumme, Aufteilung auf gleiche Auszahlung · Erfahrungswerte aus den
+      Panel-Messungen vom 13.08.2026 · Design und Funktion laufen getrennt — die
+      Schmuck-Schicht ist löschbar, ohne dass eine Zahl fehlt.
+    </div>
   </footer>
 
 </div>
@@ -116,5 +130,6 @@
 <script src="js/aktualitaet.js"></script>
 <script src="js/verlauf.js"></script>
 <script src="js/oberflaeche.js"></script>
+<script src="js/schmuck.js"></script>
 </body>
 </html>

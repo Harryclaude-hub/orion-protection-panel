@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Orion Protection Panel">
+  <!-- ORION PROTECTION PANEL — Delta im Taktik-Rahmen mit Orbit.
+       Reine Design-Datei: löschbar, ohne jede Funktion. -->
+  <defs>
+    <linearGradient id="tiefe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0D1726"/>
+      <stop offset="1" stop-color="#070D18"/>
+    </linearGradient>
+  </defs>
+  <!-- Rahmen mit Eckschnitt -->
+  <path d="M14 3 H50 L61 14 V50 L50 61 H14 L3 50 V14 Z" fill="url(#tiefe)" stroke="#22384F" stroke-width="2"/>
+  <path d="M14 3 H50 L61 14 V50 L50 61 H14 L3 50 V14 Z" fill="none" stroke="#3CC9F5" stroke-width="1" opacity="0.55"/>
+  <!-- Eck-Marken -->
+  <path d="M8 20 V14 L14 8 H20" fill="none" stroke="#3CC9F5" stroke-width="2" stroke-linecap="round"/>
+  <path d="M56 44 V50 L50 56 H44" fill="none" stroke="#3CC9F5" stroke-width="2" stroke-linecap="round"/>
+  <!-- Orbit -->
+  <ellipse cx="32" cy="37" rx="21" ry="6.5" fill="none" stroke="#3CC9F5" stroke-width="1.2" stroke-dasharray="3 4" opacity="0.65"/>
+  <!-- Delta -->
+  <path d="M32 13 L47 46 H17 Z" fill="none" stroke="#E7F1FB" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M32 24 L40 42 H24 Z" fill="none" stroke="#3CC9F5" stroke-width="1.6" stroke-linejoin="round"/>
+  <!-- Kernpunkt -->
+  <circle cx="32" cy="37" r="1.8" fill="#3CC9F5"/>
+</svg>

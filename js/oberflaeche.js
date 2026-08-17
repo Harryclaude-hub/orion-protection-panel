@@ -149,7 +149,7 @@
 
   function warnungenZeichnen(erg) {
     if (!erg.warnungen.length) {
-      el('warnungen').innerHTML = '<div class="leise">Keine Warnzeichen.</div>';
+      el('warnungen').innerHTML = '<div class="leise">Keine Warnzeichen, Chef — das Feld ist ruhig.</div>';
       return;
     }
     el('warnungen').innerHTML = erg.warnungen.map(function (w) {
@@ -222,7 +222,7 @@
     var V = P.verlauf;
     var status = el('konto-status');
     if (V.angemeldet()) {
-      status.innerHTML = 'Angemeldet als <b>' + txt(V.eigeneMail() || '?') + '</b> — Prüfungen landen im Konto, auf jedem Gerät abrufbar.';
+      status.innerHTML = 'Jawohl, Chef — angemeldet als <b>' + txt(V.eigeneMail() || '?') + '</b>. Prüfungen landen im Konto, auf jedem Gerät abrufbar.';
       el('konto-formular').style.display = 'none';
       el('abmelden').style.display = '';
     } else {
@@ -258,14 +258,14 @@
   /* ---------- Ablauf ---------- */
   function pruefen() {
     var text = el('eingabe').value;
-    if (!text.trim()) { el('eingabe-hinweis').textContent = 'Erst den kopierten Bericht einfügen.'; return; }
+    if (!text.trim()) { el('eingabe-hinweis').textContent = 'Chef, erst den kopierten Bericht einfügen.'; return; }
     var b = P.parser.parse(text);
     if (!b.erkannt) {
-      el('eingabe-hinweis').textContent = 'Das sieht nicht nach einem Orion-Prüfbericht aus (Kopf oder „SEITE 1" fehlen). Geprüft wird trotzdem, was erkennbar ist.';
+      el('eingabe-hinweis').textContent = 'Chef, das sieht nicht nach einem Orion-Prüfbericht aus (Kopf oder „SEITE 1" fehlen). Geprüft wird trotzdem, was erkennbar ist.';
     } else if (b.fehlend.length) {
-      el('eingabe-hinweis').textContent = 'Erkannt, aber ohne: ' + b.fehlend.join(', ') + '.';
+      el('eingabe-hinweis').textContent = 'Verstanden, Chef — erkannt, aber ohne: ' + b.fehlend.join(', ') + '.';
     } else {
-      el('eingabe-hinweis').textContent = 'Bericht erkannt und vollständig zerlegt.';
+      el('eingabe-hinweis').textContent = 'Jawohl, Chef — Bericht erkannt und vollständig zerlegt.';
     }
     var erg = P.pruefer.pruefen(b);
     zustand.bericht = b; zustand.ergebnis = erg;
@@ -276,15 +276,15 @@
     rechenwegZeichnen(erg);
     linksZeichnen(erg);
     warnungenZeichnen(erg);
-    el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Noch nicht abgerufen. Der Abruf passiert nur auf Klick, einmalig.</div>';
+    el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Bereit, Chef — der Abruf passiert nur auf Befehl, einmalig.</div>';
 
     P.verlauf.speichern(b, erg).then(function (wo) {
-      el('speicher-hinweis').textContent = wo.wo === 'konto' ? 'Im Konto gespeichert.'
-        : wo.wo === 'lokal' ? 'Auf diesem Gerät gespeichert (ohne Anmeldung nur hier sichtbar).'
-        : 'Speichern ging nicht (Browser-Speicher gesperrt).';
+      el('speicher-hinweis').textContent = wo.wo === 'konto' ? 'Jawohl, Chef — im Konto abgelegt.'
+        : wo.wo === 'lokal' ? 'Jawohl, Chef — auf diesem Gerät abgelegt (ohne Anmeldung nur hier sichtbar).'
+        : 'Chef, Speichern ging nicht (Browser-Speicher gesperrt).';
       verlaufZeichnen();
     }).catch(function (fehler) {
-      el('speicher-hinweis').textContent = 'Speichern fehlgeschlagen: ' + fehler.message;
+      el('speicher-hinweis').textContent = 'Chef, Speichern fehlgeschlagen: ' + fehler.message;
     });
   }
 
@@ -301,7 +301,7 @@
     el('aktualitaet-knopf').addEventListener('click', function () {
       if (!zustand.bericht) return;
       var kn = el('aktualitaet-knopf');
-      kn.textContent = 'frage die Anbieter …';
+      kn.textContent = 'Frage die Anbieter ab, Chef …';
       P.aktualitaet.pruefeBericht(zustand.bericht).then(function (a) {
         kn.textContent = 'Jetzt beim Anbieter nachsehen';
         aktualitaetZeichnen(a, zustand.bericht);
@@ -313,8 +313,8 @@
 
     el('anmelden').addEventListener('click', function () {
       var mail = el('konto-mail').value.trim(), pw = el('konto-passwort').value;
-      if (!mail || !pw) { el('konto-hinweis').textContent = 'E-Mail und Passwort eintragen.'; return; }
-      el('konto-hinweis').textContent = 'melde an …';
+      if (!mail || !pw) { el('konto-hinweis').textContent = 'Chef, E-Mail und Passwort eintragen.'; return; }
+      el('konto-hinweis').textContent = 'Melde an, Chef …';
       P.verlauf.anmelden(mail, pw).then(function (r) {
         el('konto-hinweis').textContent = r.ok ? '' : r.grund;
         verlaufZeichnen();
@@ -322,9 +322,9 @@
     });
     el('konto-anlegen').addEventListener('click', function () {
       var mail = el('konto-mail').value.trim(), pw = el('konto-passwort').value;
-      if (!mail || !pw) { el('konto-hinweis').textContent = 'E-Mail und Passwort eintragen.'; return; }
-      if (pw.length < 8) { el('konto-hinweis').textContent = 'Passwort: mindestens 8 Zeichen.'; return; }
-      el('konto-hinweis').textContent = 'lege Konto an …';
+      if (!mail || !pw) { el('konto-hinweis').textContent = 'Chef, E-Mail und Passwort eintragen.'; return; }
+      if (pw.length < 8) { el('konto-hinweis').textContent = 'Chef, das Passwort braucht mindestens 8 Zeichen.'; return; }
+      el('konto-hinweis').textContent = 'Lege Konto an, Chef …';
       P.verlauf.kontoAnlegen(mail, pw).then(function (r) {
         el('konto-hinweis').textContent = r.ok ? (r.hinweis || '') : r.grund;
         verlaufZeichnen();
