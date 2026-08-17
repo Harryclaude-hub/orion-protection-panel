@@ -111,26 +111,61 @@
     el('rechenweg').innerHTML = zeilen.join('');
   }
 
+  /* Ein Schritt = EIN RECHENBLATT (Karams Vorgabe 17.08. spät):
+   * heller Papierblock mit Zeilen, dunkle Schrift, Formel groß obenauf,
+   * darunter die Rechnung Zeile für Zeile, darunter die Bewertung als
+   * schmale Zahlenzeile. Der Erklärtext liegt eingeklappt darunter, damit
+   * das Blatt nicht zur Textwand wird — aufklappen, wer es wissen will. */
   function schrittHtml(s) {
-      var u = s.urteil || 'unpruefbar';
-      var wert = '';
-      if (s.ist !== undefined && s.ist !== null && isFinite(s.ist)) {
-        wert = '<span class="mono">eigene Rechnung: <b>' + txt(f(s.ist, s.stellen)) + (s.einheit ? ' ' + txt(s.einheit) : '') + '</b></span>';
-        if (s.soll !== undefined && s.soll !== null && isFinite(s.soll)) {
-          wert += ' <span class="mono leise">· Panel: ' + txt(f(s.soll, s.stellen)) + (s.einheit ? ' ' + txt(s.einheit) : '') + '</span>';
-          if (u === 'abweichung') {
-            wert += ' <span class="mono rot">· Unterschied ' + txt(f(s.delta, s.stellen)) + '</span>';
-          }
-        }
+    var u = s.urteil || 'unpruefbar';
+    var zeilen = (s.zeilen || []).map(function (z) {
+      var eingerueckt = /^\s/.test(z);
+      return '<div class="blattzeile' + (eingerueckt ? ' eingerueckt' : ' abschnitt') + '">' + txt(z.trim()) + '</div>';
+    }).join('');
+
+    /* Die Bewertung: immer MIT den Zahlen, die sie tragen. */
+    var bewertung = '';
+    if (s.ist !== undefined && s.ist !== null && isFinite(s.ist)) {
+      var einheit = s.einheit ? ' ' + s.einheit : '';
+      var felder =
+        '<span class="bwfeld"><span class="bwname">eigene Rechnung</span>' +
+          '<b class="mono">' + txt(f(s.ist, s.stellen)) + txt(einheit) + '</b></span>';
+      if (s.soll !== undefined && s.soll !== null && isFinite(s.soll)) {
+        felder +=
+          '<span class="bwfeld"><span class="bwname">laut Panel</span>' +
+            '<b class="mono">' + txt(f(s.soll, s.stellen)) + txt(einheit) + '</b></span>' +
+          '<span class="bwfeld"><span class="bwname">Unterschied</span>' +
+            '<b class="mono">' + txt(f(Math.abs(s.delta), Math.max(s.stellen, 4))) + '</b></span>' +
+          '<span class="bwfeld"><span class="bwname">erlaubte Rundung</span>' +
+            '<b class="mono">' + txt(f(s.toleranz, Math.max(s.stellen, 4))) + '</b></span>';
       }
-      return '<div class="schritt ' + u + '">' +
-        '<div class="schrittkopf"><span class="marke ' + u + '">' + txt(URTEIL_TEXT[u] || u) + '</span>' +
-        '<b>' + txt(s.titel) + '</b></div>' +
-        (s.formel ? '<div class="leise mono klein">' + txt(s.formel) + '</div>' : '') +
-        (s.rechnung ? '<div class="mono klein">' + txt(s.rechnung) + '</div>' : '') +
-        (wert ? '<div>' + wert + '</div>' : '') +
-        (s.kommentar ? '<div class="kommentar">' + txt(s.kommentar) + '</div>' : '') +
-        '</div>';
+      bewertung = '<div class="bewertung ' + u + '">' + felder +
+        '<span class="bwurteil ' + u + '">' + txt(URTEIL_TEXT[u] || u) + '</span></div>';
+    } else {
+      bewertung = '<div class="bewertung ' + u + '">' +
+        '<span class="bwfeld"><span class="bwname">Ergebnis</span><b>nicht nachrechenbar</b></span>' +
+        '<span class="bwurteil ' + u + '">' + txt(URTEIL_TEXT[u] || u) + '</span></div>';
+    }
+
+    var erklaerung = '';
+    if (s.warum || s.taschenrechner || s.toleranzGrund) {
+      erklaerung = '<details class="erklaerung"><summary>Was bedeutet dieser Schritt?</summary>' +
+        (s.warum ? '<p>' + txt(s.warum) + '</p>' : '') +
+        (s.taschenrechner ? '<p class="rechnertipp"><b>Selbst nachtippen:</b> ' + txt(s.taschenrechner) + '</p>' : '') +
+        (s.toleranzGrund ? '<p class="leise klein">Erlaubte Rundung, weil ' + txt(s.toleranzGrund) + '.</p>' : '') +
+        '</details>';
+    }
+
+    return '<div class="schritt ' + u + '">' +
+      '<div class="schrittkopf"><b>' + txt(s.titel) + '</b></div>' +
+      '<div class="blatt">' +
+        (s.formel ? '<div class="blattformel">' + txt(s.formel) + '</div>' : '') +
+        (zeilen || '<div class="blattzeile abschnitt">' + txt(s.kommentar || 'Keine Rechnung möglich.') + '</div>') +
+      '</div>' +
+      bewertung +
+      (s.kommentar && zeilen ? '<div class="kommentar">' + txt(s.kommentar) + '</div>' : '') +
+      erklaerung +
+      '</div>';
   }
 
   /* ---------- Link-Prüfung ---------- */

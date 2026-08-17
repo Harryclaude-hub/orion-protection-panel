@@ -258,6 +258,34 @@ var ergNochmal = Pruefer.pruefen(bSauber);
 ok(ergNochmal.urteil.stufe === 'ok', 'sauberer Bericht weiterhin ok (ist: ' + ergNochmal.urteil.stufe + ')');
 ok(ergNochmal.schritte.every(function (s) { return !!s.gruppe; }), 'jeder Schritt gehört zu einem Rechnungs-Block');
 
+/* ---------- 11) Das Rechenblatt: jede Rechnung zeigt ihre Zahlen ---------- */
+console.log('11) Rechenblatt-Inhalte');
+var rechenSchritte = ergNochmal.schritte.filter(function (s) { return s.urteil !== 'unpruefbar'; });
+ok(rechenSchritte.length >= 6, 'mindestens sechs prüfbare Rechnungen (sind: ' + rechenSchritte.length + ')');
+ok(rechenSchritte.every(function (s) { return s.zeilen && s.zeilen.length >= 1; }), 'jede Rechnung hat Zeilen zum Mitlesen');
+ok(rechenSchritte.every(function (s) { return !!s.formel; }), 'jede Rechnung nennt ihre Formel');
+ok(rechenSchritte.every(function (s) { return !!s.warum; }), 'jede Rechnung erklärt, was sie bedeutet');
+ok(rechenSchritte.every(function (s) { return !!s.taschenrechner; }), 'jede Rechnung hat eine Taschenrechner-Zeile');
+ok(rechenSchritte.every(function (s) { return !!s.toleranzGrund; }), 'jede Rechnung begründet ihre erlaubte Rundung');
+ok(rechenSchritte.every(function (s) { return typeof s.delta === 'number'; }),
+  'jede Rechnung weist den Unterschied zum Panel aus — kein nacktes grünes Licht');
+
+/* Die Zeilen müssen die ECHTEN Zwischenergebnisse tragen, nicht nur Worte:
+ * Gebühr = 0,04 × 0,480 × 0,520 = 0,009984 und Endwert 2,063. */
+var s1Schritt = rechenSchritte.filter(function (s) { return s.titel.indexOf('Seite 1') === 0; })[0];
+var s1Text = s1Schritt.zeilen.join(' | ');
+ok(s1Text.indexOf('0.009984') >= 0, 'Zwischenergebnis der Gebühr steht im Blatt');
+ok(s1Text.indexOf('2.063') >= 0, 'gerundeter Endwert steht im Blatt');
+ok(s1Schritt.taschenrechner.indexOf('0,480') >= 0, 'Taschenrechner-Zeile nutzt Komma-Schreibweise');
+
+/* Unprüfbare Schritte dürfen NICHT so tun, als hätten sie gerechnet. */
+var ohneMengeText = sauber.text.replace(/ {2}Max\. Einsatz[^\n]*\n/,
+  '  Max. Einsatz (beide Seiten zusammen): unbekannt · tatsächlicher Gewinn: unbekannt\n');
+var ohneMenge = Pruefer.pruefen(Parser.parse(ohneMengeText));
+var mengeSchritt = ohneMenge.schritte.filter(function (s) { return s.titel.indexOf('Maximaler Einsatz') === 0; })[0];
+ok(mengeSchritt && mengeSchritt.urteil === 'unpruefbar', 'fehlende Menge bleibt „nicht prüfbar"');
+ok(mengeSchritt && !!mengeSchritt.warum, 'und sagt trotzdem, warum sie nicht prüfbar ist');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {

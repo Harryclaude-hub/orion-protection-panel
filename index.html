@@ -9,6 +9,16 @@
   <link rel="stylesheet" href="css/stil.css">
 </head>
 <body>
+
+<!-- Schmuck-Schicht: schwebende Planeten. Rein dekorativ, liegt hinter
+     allem und nimmt keine Klicks an. Dieses eine div löschen = Planeten
+     weg, Funktion unverändert. -->
+<div class="planeten" aria-hidden="true">
+  <div class="planet planet-1"></div>
+  <div class="planet planet-2"></div>
+  <div class="planet planet-3"></div>
+</div>
+
 <div class="rahmen">
 
   <header>
@@ -53,8 +63,11 @@
 
     <h2>3 · Der Rechenweg, Schritt für Schritt</h2>
     <p class="leise" style="margin-top:0">
-      Jeder Schritt: Formel, eingesetzte Zahlen, eigenes Ergebnis, daneben der Wert des
-      Panels. Rot heißt: dort von Hand nachrechnen und ausbessern.
+      Jede Rechnung steht auf ihrem eigenen Blatt: oben die Formel, darunter jeder
+      Zwischenschritt mit allen Zahlen, darunter die Bewertung — eigenes Ergebnis, Wert
+      des Panels, Unterschied und die erlaubte Rundung. Grün gibt es nur zusammen mit den
+      Zahlen, die es belegen. Wer wissen will, was ein Schritt bedeutet und wie man ihn
+      selbst am Taschenrechner nachtippt, klappt „Was bedeutet dieser Schritt?" auf.
     </p>
     <div id="rechenweg"></div>
 
