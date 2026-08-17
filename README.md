@@ -83,6 +83,37 @@ Designarbeit laufen die Funktions-Selbsttests.
 | `js/schmuck.js` | Design-Schicht: nur die UTC-Uhr der Fußleiste, löschbar |
 | `logo.svg` | Logo und Favicon (Delta im Taktik-Rahmen), löschbar |
 
+## Rechnet es wirklich nach? — gemessen, nicht behauptet
+
+`node pruefung/haertetest.js` verfälscht einen echten Bericht gezielt und
+zählt, was gefangen wird. Stand 17.08.2026:
+
+```
+TREFFER:     13 von 13 Verfälschungen erkannt
+FEHLALARME:  0 beim korrekten Bericht · 0 von 2 bei erlaubter Rundung
+```
+
+Gefangen werden u. a.: geschönte Rendite (auch nur um 0,09 Punkte),
+gefälschte Kehrwertsumme, zu hohe Effektivquote, heimlich gesenkte Gebühr,
+manipulierter Kurs oder Quote, 50/50-Aufteilung statt nach Effektivquote,
+zu hohe Auszahlung, falscher Gewinn, Link auf eine fremde Partie, Link aufs
+falsche Buch, alte Gebührenformel.
+
+**Die Nachrechnung ist reine Mathematik im Browser — kein KI-Modell, kein
+Raten, kein Zufall.** Dieselbe Eingabe ergibt immer dasselbe Urteil, und
+jede Zahl steht sichtbar auf dem Rechenblatt.
+
+### Was er NICHT sehen kann (ebenfalls gemessen)
+
+1. **Halbzeit gegen ganzes Spiel.** Ist die Rechnung stimmig, aber die
+   beiden Bücher meinen verschiedene Fragen, ist das aus dem Text allein
+   nicht entscheidbar — der Bericht nennt beim Gegenbuch nur die Partie.
+   Dagegen helfen: Link-Prüfung, Zuordnungswert, und beide Links öffnen.
+2. **Ein durchgehend stimmig erfundener Kurs.** Passt alles zueinander,
+   kann reines Nachrechnen es nicht widerlegen. Dagegen helfen: der
+   Aktualitäts-Abruf beim Anbieter und die Warnzeichen (im Testfall schlug
+   das Rendite-Band an: 3,60 % liegt über dem gemessenen 2,07–3,27 %).
+
 ## Wie es geprüft wurde
 
 - `node pruefung/pruefstand.test.js` — **65 Prüfungen**, darunter für jede
