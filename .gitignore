@@ -1,0 +1,20 @@
+# Arbeits- und Wegwerfdateien (nie ins Repo)
+_*.js
+_*.mjs
+_*.html
+_*.json
+.claude/
+node_modules/
+
+# Zugangsdaten — gehoeren niemals in ein oeffentliches Repo
+.env
+.env.*
+zugang*.json
+geheim*.json
+*.pem
+*.key
+
+# Betriebssystem
+Thumbs.db
+desktop.ini
+.DS_Store
