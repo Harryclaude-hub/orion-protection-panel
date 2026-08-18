@@ -49,7 +49,7 @@
       </div>
     </div>
     <div class="herowerte">
-      <div class="hw"><span class="hwname">Prüfungen</span><b class="hwwert">129</b><span class="hwfuss">Selbsttests grün</span></div>
+      <div class="hw"><span class="hwname">Prüfungen</span><b class="hwwert">179</b><span class="hwfuss">Selbsttests grün</span></div>
       <div class="hw"><span class="hwname">Härtetest</span><b class="hwwert">13/13</b><span class="hwfuss">Verfälschungen erkannt</span></div>
       <div class="hw"><span class="hwname">Fehlalarme</span><b class="hwwert">0</b><span class="hwfuss">bei korrektem Bericht</span></div>
     </div>
@@ -73,6 +73,17 @@
 
   <div id="ergebnis" style="display:none">
 
+    <h2>Vollständige Herkunft — und meinen beide dasselbe Spiel?</h2>
+    <p class="leise" style="margin-top:0">
+      Jede Angabe mit ihrer Quelle: was steht im Bericht, was sagt der Anbieter selbst
+      (mit Link zum Nachsehen), was hat der Prüfstand daraus gerechnet. Darunter der
+      tiefe Vergleich beider Seiten: dieselbe Partie, derselbe Anpfiff, dieselbe Liga,
+      dieselbe Altersklasse? Eine fehlerfreie Rechnung auf zwei verschiedenen Spielen
+      ist keine Absicherung.
+    </p>
+    <div id="herkunft"></div>
+
+    <h2>Übersicht — lohnt es sich?</h2>
     <div id="uebersicht"></div>
 
     <details class="beweis">
@@ -150,6 +161,68 @@
 
   </div>
 
+  <h2>Rechen-Werkstatt — selbst nachrechnen</h2>
+  <div class="karte">
+    <p class="leise" style="margin-top:0">
+      Hier darfst du jede Zahl ändern; es rechnet sofort mit. Was hier steht, ändert
+      <b>kein Urteil</b> und landet in keinem Verlauf — die Prüfung oben bleibt unberührt.
+      Gerechnet wird mit denselben Formeln, es gibt keine zweite Wahrheit.
+    </p>
+    <div class="knopfzeile">
+      <button type="button" class="knopf" id="w-uebernehmen">Zahlen aus dem Bericht holen</button>
+    </div>
+    <div class="wfelder">
+      <div class="wgruppe">
+        <div class="wgruppentitel">Seite 1</div>
+        <label class="eingabefeld">Art
+          <select id="w-art1">
+            <option value="preis">Anteilspreis (Polymarket/Kalshi)</option>
+            <option value="back">Quote · Back</option>
+            <option value="lay">Quote · Lay (dagegen)</option>
+          </select></label>
+        <label class="eingabefeld">Kurs
+          <input type="number" id="w-wert1" value="0.48" step="0.001" inputmode="decimal"></label>
+        <label class="eingabefeld">Gebühr %
+          <input type="number" id="w-geb1" value="4.0" step="0.1" inputmode="decimal"></label>
+      </div>
+      <div class="wgruppe">
+        <div class="wgruppentitel">Seite 2</div>
+        <label class="eingabefeld">Art
+          <select id="w-art2">
+            <option value="preis">Anteilspreis (Polymarket/Kalshi)</option>
+            <option value="back" selected>Quote · Back</option>
+            <option value="lay">Quote · Lay (dagegen)</option>
+          </select></label>
+        <label class="eingabefeld">Kurs
+          <input type="number" id="w-wert2" value="2.06" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Gebühr %
+          <input type="number" id="w-geb2" value="2.0" step="0.1" inputmode="decimal"></label>
+      </div>
+      <div class="wgruppe">
+        <div class="wgruppentitel">Einsatz</div>
+        <label class="eingabefeld">gesamt
+          <input type="number" id="w-einsatz" value="100" step="10" inputmode="decimal"></label>
+        <label class="eingabefeld">runden auf
+          <select id="w-schritt">
+            <option value="0.01">Cent</option>
+            <option value="1" selected>ganze</option>
+            <option value="5">Fünfer</option>
+            <option value="10">Zehner</option>
+          </select></label>
+      </div>
+    </div>
+    <div id="w-ergebnis" class="werkergebnis"></div>
+  </div>
+
+  <h2>Nebennotiz</h2>
+  <div class="karte">
+    <p class="leise" style="margin-top:0">
+      Zum Mitschreiben beim Nachrechnen. Bleibt auf diesem Gerät, auch nach dem Schließen.
+    </p>
+    <textarea id="w-notiz" style="min-height:130px"
+      placeholder="Notizen, Zwischenergebnisse, was du beim Öffnen der Links gesehen hast …"></textarea>
+  </div>
+
   <h2>Verlauf</h2>
   <div class="karte">
     <div id="konto-status" class="leise"></div>
@@ -190,8 +263,11 @@
 <script src="js/einsatz.js"></script>
 <script src="js/bewertung.js"></script>
 <script src="js/uebersicht.js"></script>
+<script src="js/paarung.js"></script>
+<script src="js/herkunft.js"></script>
 <script src="js/aktualitaet.js"></script>
 <script src="js/verlauf.js"></script>
+<script src="js/werkstatt.js"></script>
 <script src="js/oberflaeche.js"></script>
 <script src="js/schmuck.js"></script>
 </body>

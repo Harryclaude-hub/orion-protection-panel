@@ -66,6 +66,19 @@
         if (markt.closed === true || markt.active === false) {
           return { status: 'vorbei', text: 'Der Markt ist bei Polymarket geschlossen — die Zahlen des Berichts sind Geschichte.' };
         }
+        /* Die Details fuer die Paarungspruefung: Was fragt der Markt
+         * wirklich, wann ist Anpfiff, zu welcher Serie/Liga gehoert er?
+         * Genau diese Angaben entscheiden, ob beide Buecher DASSELBE
+         * Spiel meinen (Karams Vorgabe 18.08.). */
+        var ereignis = (markt.events && markt.events[0]) || {};
+        var einzel = {
+          frage: markt.question || markt.title || null,
+          ereignis: ereignis.title || null,
+          anpfiff: markt.gameStartTime || ereignis.startDate || markt.startDate || null,
+          endet: markt.endDate || null,
+          serie: ereignis.seriesSlug || ereignis.series || markt.seriesSlug || null,
+          marktArt: markt.sportsMarketType || null
+        };
         var tokens = liste(markt.clobTokenIds);
         var outcomes = liste(markt.outcomes);
         var idx = ausgangIndex(seite.seiteText, outcomes);
@@ -80,8 +93,11 @@
               return { status: 'unpruefbar', text: 'Das Orderbuch nennt keinen gültigen Briefkurs.' };
             }
             return { status: 'ok', wert: preis, ausgangName: outcomes[idx] || null,
-                     frage: markt.question || markt.title || null,
-                     quelle: 'CLOB-Orderbuch, Briefkurs (side=sell)' };
+                     frage: einzel.frage, ereignis: einzel.ereignis,
+                     anpfiff: einzel.anpfiff, endet: einzel.endet,
+                     serie: einzel.serie, marktArt: einzel.marktArt,
+                     quelle: 'CLOB-Orderbuch, Briefkurs (side=sell)',
+                     quellLink: 'https://gamma-api.polymarket.com/markets?slug=' + encodeURIComponent(slug) };
           });
       })
       .catch(function (f) {

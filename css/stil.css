@@ -567,3 +567,51 @@ footer { margin-top: 46px; }
   letter-spacing: 0.06em; padding: 4px 0;
 }
 .beweis > summary:hover { color: var(--signal); }
+
+/* ---------- HERKUNFT: woher jede Zahl stammt ----------
+ * Drei Herkünfte, drei Farben — damit man auf einen Blick sieht, ob
+ * eine Zahl aus dem Bericht kommt, vom Anbieter selbst, oder erst hier
+ * gerechnet wurde. */
+.herkunftkarte { margin-bottom: 10px; }
+.hktabelle { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.hktabelle th {
+  text-align: left; font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--leise); font-weight: 600; padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--rand);
+}
+.hktabelle td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rand); vertical-align: top; }
+.hktabelle tr:last-child td { border-bottom: none; }
+.hkwas { color: var(--leise); white-space: nowrap; }
+.hkwert { color: var(--text); word-break: break-word; }
+.hkquelle {
+  display: inline-block; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid; border-radius: 3px; padding: 1px 7px; white-space: nowrap;
+}
+.hkquelle.bericht { color: var(--leise); border-color: var(--rand); }
+.hkquelle.anbieter { color: var(--signal); border-color: var(--signal); }
+.hkquelle.gerechnet { color: var(--gruen); border-color: var(--gruen); }
+.hkquelle.fehlt { color: var(--orange); border-color: var(--orange); }
+.hklink { color: var(--signal); font-size: 0.78rem; white-space: nowrap; }
+.pz-falsch td { background: rgba(255, 107, 133, 0.06); }
+
+/* ---------- RECHEN-WERKSTATT ---------- */
+.wfelder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+@media (max-width: 820px) { .wfelder { grid-template-columns: 1fr; } }
+.wgruppe {
+  background: var(--karte-tief); border: 1px solid var(--rand); border-radius: 4px;
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.wgruppentitel {
+  font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--signal);
+}
+.werkergebnis { margin-top: 12px; border-top: 1px solid var(--rand); padding-top: 10px; }
+.wzeile {
+  display: grid; grid-template-columns: 200px 130px 1fr; gap: 10px;
+  align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--rand);
+}
+.wzeile:last-child { border-bottom: none; }
+@media (max-width: 700px) { .wzeile { grid-template-columns: 1fr; gap: 2px; } }
+.wname { color: var(--leise); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.wzeile b { font-size: 1.02rem; }
+.wzeile.gross b { font-size: 1.34rem; }
+.wtrenn { border-top: 1px dashed var(--rand); margin: 8px 0; }

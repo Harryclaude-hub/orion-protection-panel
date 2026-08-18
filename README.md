@@ -48,6 +48,51 @@ und trotzdem keinen Cent bringen. Dann steht dort ausdrücklich
 **„RECHNUNG RICHTIG — ABER KEIN GEWINN"**, während die Rechenprüfung weiter
 „deckt sich" meldet. Beides ist wahr, und beides muss man sehen.
 
+## Meinen beide Bücher dasselbe Spiel? (Paarungsprüfung)
+
+Die gefährlichste Fehlerklasse ist nicht die Rechnung, sondern die Paarung:
+zwei Bücher, die verschiedene Partien meinen. Die Rechnung ist dann fehlerfrei —
+und die Wette trotzdem offen. Das Orion Panel hat dagegen am 18.08.2026 drei
+Sperren bekommen; `js/paarung.js` baut sie **eigenständig nach** (zweite Fassung,
+kein kopierter Code):
+
+| Prüfung | Was sie fängt |
+|---|---|
+| **Alter** | U15–U23 gegen erste Elf — der Fund des Auftraggebers; die Namen sehen identisch aus |
+| **Geschlecht** | Frauen- gegen Männerpartie |
+| **Reserve** | zweite Mannschaft, Academy, „(Res)" gegen erste |
+| **Anpfiffzeit** | Toleranz 180 min (Panel-Messung an 274 Paaren: zwischen 2 und 3 Stunden lag kein echtes Paar, die falschen begannen bei 270 min). Fängt zusätzlich das **Rückspiel**, bei dem Namen und Kennungen gleich sind und nur der Termin abweicht |
+| **Liga** | Jugend-, Reserve- oder Frauenliga auf nur einer Seite (live belegter Fall: „Argentinian Primera Division Reserves") |
+
+Eine erkannte Fehlpaarung stellt die Ampel auf **ROT** — aber mit eigener,
+ehrlicher Begründung: **„NICHT SETZEN — ZWEI VERSCHIEDENE SPIELE"**, während
+Frage 2 weiterhin korrekt „geprüft, deckt sich" meldet. Eine falsche Begründung
+wäre fast so schlimm wie gar kein Alarm.
+
+Fehlt eine Angabe, wird **nicht** gesperrt und **nicht** geraten — dann steht dort
+„nicht prüfbar" mit der Aufforderung, beide Links selbst zu öffnen.
+
+## Woher jede Zahl stammt
+
+Über der Übersicht steht eine Herkunftstabelle. Jede Angabe trägt ihre Quelle,
+und wo es geht, einen Link zum Nachsehen:
+
+- **aus dem Bericht** — steht so im eingefügten Text des Panels
+- **beim Anbieter nachgefragt** — direkt geholt (Marktfrage, Anpfiff, Serie, Kurs),
+  mit Link auf die Abfrage
+- **selbst gerechnet** — vom Prüfstand aus den beiden anderen erzeugt
+
+Was von hier aus nicht erreichbar ist (Kalshi, Smarkets, Betfair), wird ausdrücklich
+als solches benannt, statt eine Zahl zu erfinden.
+
+## Rechen-Werkstatt und Nebennotiz
+
+Ganz unten: Felder, in denen jede Zahl geändert werden kann — Kurs, Gebühr,
+Einsatz, Rundung, Back/Lay/Anteilspreis. Es rechnet sofort mit und zeigt jede
+Formel. Was dort steht, ändert **kein Urteil** und landet in **keinem Verlauf**;
+die Prüfung oben bleibt unberührt. Daneben ein Notizblock, der auf dem Gerät
+erhalten bleibt.
+
 ## Was es tut
 
 1. **Einfügen:** Im Panel auf einer Karte „Kopieren" drücken, den Bericht hier
@@ -117,6 +162,9 @@ und trotzdem keinen Cent bringen. Dann steht dort ausdrücklich
 | `js/einsatz.js` | Einsatzrechner: Rundung, Gewinn je Ausgang, Marge, Puffer |
 | `js/bewertung.js` | Ampel (lohnt es sich?) + Geldfluss mit Gebühren in Geld |
 | `js/uebersicht.js` | die Übersicht ganz oben: vier Fragen + Geldtabelle |
+| `js/paarung.js` | Alter, Anpfiffzeit, Liga — meinen beide dasselbe Spiel? |
+| `js/herkunft.js` | Herkunftstabelle mit Quellen-Links + Paarungsvergleich |
+| `js/werkstatt.js` | Rechen-Werkstatt zum Selbernachrechnen (ohne Rückwirkung) |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
 | `js/aktualitaet.js` | einmaliger Anbieter-Abruf + Neuberechnung |
 | `js/verlauf.js` | Anmeldung (Supabase auth/v1) + Ablage (rest/v1), localStorage-Rückfall |
@@ -158,7 +206,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js` — **129 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js` — **179 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde

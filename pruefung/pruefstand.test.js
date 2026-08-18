@@ -412,6 +412,137 @@ ok(U.aktualitaetAntwort({ seiten: [{ status: 'ok', wert: 0.44 }, { status: 'unpr
 ok(U.aktualitaetAntwort({ seiten: [{ status: 'vorbei' }, { status: 'unpruefbar' }] }, seitenProbe).klasse === 'rot',
   'Markt geschlossen → rot');
 
+/* ---------- 14) Paarungsprüfung: dasselbe Spiel? ---------- */
+console.log('14) Paarung: Alter, Zeit, Liga');
+var PA = require('../js/paarung.js');
+
+/* Die Kennungen — der Fund des Auftraggebers. */
+ok(PA.kennung('Boca Juniors U21') === 'u21', 'U21 erkannt');
+ok(PA.kennung('Pachuca U-20') === 'u20', 'U-20 mit Bindestrich erkannt');
+ok(PA.kennung('Samsunspor Under 19') === 'u19', '„Under 19" erkannt');
+ok(PA.kennung('Boca Juniors') === '', 'erste Elf trägt keine Kennung');
+ok(PA.kennung('Boca Juniors Women') === 'w', 'Frauenmannschaft erkannt');
+ok(PA.kennung('Godoy Cruz (Res)') === 'res', 'Reserve in Klammern erkannt');
+ok(PA.kennung('Real Madrid Castilla B') === 'res', 'B-Mannschaft als Endung erkannt');
+/* Und die Gegenprobe: Vereinsnamen mit Ziffern/Wörtern DÜRFEN nicht anschlagen. */
+ok(PA.kennung('Schalke 04') === '', 'Schalke 04 ist keine Reserve');
+ok(PA.kennung('Bayer 04 Leverkusen') === '', 'Bayer 04 ist keine Reserve');
+ok(PA.kennung('1899 Hoffenheim') === '', 'Jahreszahl im Namen schlägt nicht an');
+
+ok(PA.kennungGleich('Pachuca', 'Pachuca U21') === false, 'erste Elf gegen U21 = NICHT gleich');
+ok(PA.kennungGleich('Pachuca U21', 'Pachuca U-21') === true, 'zwei Schreibweisen derselben Klasse');
+
+/* Zeitsperre. */
+ok(PA.zeitAbstand('2026-08-18T20:00:00Z', '2026-08-18T20:00:00Z') === 0, 'gleiche Zeit = 0 Minuten');
+ok(Math.abs(PA.zeitAbstand('2026-08-18T20:00:00Z', '2026-08-18T21:30:00Z') - 90) < 0.01, '90 Minuten Abstand');
+ok(PA.zeitAbstand('2026-08-18T20:00:00Z', null) === null, 'fehlende Zeit gibt null, nicht 0');
+ok(PA.zeitUrteil(0).urteil === 'passt', 'derselbe Anpfiff passt');
+ok(PA.zeitUrteil(90).urteil === 'passt', '90 Minuten liegen in der Toleranz');
+ok(PA.zeitUrteil(270).urteil === 'falsch', '270 Minuten (Samsunspor-Fall) fällt auf');
+ok(PA.zeitUrteil(705).urteil === 'falsch', '705 Minuten (Pachuca-Fall) fällt auf');
+ok(PA.zeitUrteil(null).urteil === 'unbekannt', 'ohne zweite Zeit: unbekannt, nicht passt');
+
+/* Liga. */
+ok(PA.ligaVerdacht('Argentinian Primera Division Reserves') === 'Reserve-/Nachwuchsliga',
+  'Reserveliga erkannt (der live belegte Fall)');
+ok(PA.ligaVerdacht('UEFA Youth League') === 'Reserve-/Nachwuchsliga', 'Youth League erkannt');
+ok(PA.ligaVerdacht('FA Women s Super League') === 'Frauenliga', 'Frauenliga erkannt');
+ok(PA.ligaVerdacht('U19 Bundesliga') === 'Jugendliga', 'U19-Liga erkannt');
+ok(PA.ligaVerdacht('English Premier League') === null, 'normale Liga schlägt nicht an');
+
+/* Die Gesamtprüfung. */
+var gleich = PA.pruefe({
+  seite1: { titel: 'FC Probe gegen SV Muster', zeit: '2026-08-18T20:00:00Z', liga: 'Premier League' },
+  seite2: { titel: 'FC Probe v SV Muster', zeit: '2026-08-18T20:00:00Z', liga: 'Premier League' }
+});
+ok(gleich.stufe === 'passt', 'identische Partie: passt (ist: ' + gleich.stufe + ')');
+
+var u21Fall = PA.pruefe({
+  seite1: { titel: 'Pachuca gegen Club America', zeit: '2026-08-18T20:00:00Z' },
+  seite2: { titel: 'Pachuca U21 v Club America U21', zeit: '2026-08-18T20:00:00Z' }
+});
+ok(u21Fall.stufe === 'falsch', 'erste Elf gegen U21 wird als FALSCH erkannt');
+ok(u21Fall.befunde[0].urteil === 'falsch', 'der Kennungsbefund schlägt an');
+
+var rueckspiel = PA.pruefe({
+  seite1: { titel: 'Boca Juniors gegen River Plate', zeit: '2026-08-18T20:00:00Z' },
+  seite2: { titel: 'Boca Juniors v River Plate', zeit: '2026-08-19T08:45:00Z' }
+});
+ok(rueckspiel.stufe === 'falsch', 'Rückspiel (gleiche Namen, anderer Termin) wird erkannt');
+ok(rueckspiel.befunde[1].urteil === 'falsch', 'die Zeitsperre ist es, die anschlägt');
+
+var nurEineZeit = PA.pruefe({
+  seite1: { titel: 'FC Probe gegen SV Muster', zeit: '2026-08-18T20:00:00Z' },
+  seite2: { titel: 'FC Probe v SV Muster' }
+});
+ok(nurEineZeit.stufe === 'unbekannt', 'fehlende zweite Zeit: unbekannt statt falsch');
+ok(nurEineZeit.anzahlFalsch === 0, 'und ausdrücklich KEIN Fehlbefund');
+
+var ligaFall = PA.pruefe({
+  seite1: { titel: 'Godoy Cruz gegen Talleres', liga: 'Argentinian Primera Division', zeit: '2026-08-18T20:00:00Z' },
+  seite2: { titel: 'Godoy Cruz v Talleres', liga: 'Argentinian Primera Division Reserves', zeit: '2026-08-18T20:00:00Z' }
+});
+ok(ligaFall.stufe === 'falsch', 'Reserveliga auf nur einer Seite wird erkannt');
+
+
+/* ---------- 15) Rechen-Werkstatt (reine Rechnung, ohne DOM) ---------- */
+console.log('15) Werkstatt-Rechnung');
+/* Die Werkstatt nutzt dieselben Bausteine; hier wird geprüft, dass
+   freie Zahlen zu denselben Ergebnissen führen wie der Prüfteil. */
+var wQe1 = R.qeAnteil(0.48, 0.04), wQe2 = R.qeBack(2.06, 0.02);
+var wPlan = E.rechne({ qe1: wQe1, qe2: wQe2, gesamt: 250, schritt: 5 });
+ok(wPlan.s1 % 5 === 0 && wPlan.s2 % 5 === 0, 'Werkstatt-Rundung auf Fünfer');
+ok(Math.abs(wPlan.garantiert - Math.min(wPlan.s1 * wQe1 - wPlan.eingesetzt, wPlan.s2 * wQe2 - wPlan.eingesetzt)) < 1e-9,
+  'Werkstatt: garantiert = schlechterer Ausgang');
+var wLay = R.qeLay(1.45, 0.02);
+ok(wLay > 1 && Math.abs(wLay - (1 + 0.98 / 0.45)) < 1e-9, 'Werkstatt kann auch Lay');
+
+/* ---------- 16) Fehlpaarung bekommt eine EIGENE Begründung ---------- */
+console.log('16) Fehlpaarung in der Ampel');
+/* Am 18.08. beim Einbau gefunden: Eine Fehlpaarung wurde als
+   „Rechenfehler" gemeldet — dabei stimmte die Rechnung nachweislich.
+   Falsche Begründung ist fast so schlimm wie kein Alarm, deshalb hier
+   ein eigener Test je Fall. */
+var fehlpaarung = B.ampel({ rechnungStufe: 'ok', paarungStufe: 'falsch', harteBefunde: 0, warnungen: 0, rendite: 2.53 });
+ok(fehlpaarung.stufe === 'rot', 'Fehlpaarung ist ROT');
+ok(fehlpaarung.kopf.indexOf('ZWEI VERSCHIEDENE SPIELE') >= 0, 'der Kopf nennt den WAHREN Grund');
+ok(fehlpaarung.kopf.indexOf('Rechnung stimmt nicht') < 0, 'und behauptet NICHT, die Rechnung sei falsch');
+ok(fehlpaarung.rechnungfrage.indexOf('deckt sich') >= 0, 'Frage 2 bleibt korrekt: die Rechnung deckt sich');
+ok(fehlpaarung.gewinnfrage.indexOf('keine Absicherung') >= 0, 'Frage 1: keine Absicherung');
+
+/* Rechenfehler behält seine eigene, andere Begründung. */
+var rechenfehler = B.ampel({ rechnungStufe: 'fehler', paarungStufe: 'passt', harteBefunde: 1, warnungen: 0, rendite: 2.53 });
+ok(rechenfehler.kopf.indexOf('Rechnung stimmt nicht') >= 0, 'Rechenfehler wird weiterhin als solcher benannt');
+ok(rechenfehler.kopf !== fehlpaarung.kopf, 'zwei verschiedene Fehler, zwei verschiedene Texte');
+
+/* Beides zusammen: die Paarung wird zuerst genannt, weil sie schwerer wiegt. */
+var beides = B.ampel({ rechnungStufe: 'fehler', paarungStufe: 'falsch', harteBefunde: 1, warnungen: 0, rendite: 2.53 });
+ok(beides.stufe === 'rot' && beides.kopf.indexOf('ZWEI VERSCHIEDENE') >= 0, 'bei beidem führt die Fehlpaarung');
+
+/* Offene Paarung drückt auf orange, sperrt aber nicht. */
+var offenePaarung = B.ampel({ rechnungStufe: 'ok', paarungStufe: 'unbekannt', harteBefunde: 0, warnungen: 0, rendite: 2.53 });
+ok(offenePaarung.stufe === 'orange', 'nicht vergleichbare Paarung: orange, nicht rot');
+ok(offenePaarung.satz.indexOf('beide Links öffnen') >= 0, 'und sagt, was zu tun ist');
+
+/* Saubere Paarung lässt Grün zu. */
+ok(B.ampel({ rechnungStufe: 'ok', paarungStufe: 'passt', harteBefunde: 0, warnungen: 0, rendite: 2.53 }).stufe === 'gruen',
+  'geprüfte Paarung + saubere Rechnung + Gewinn = grün');
+
+/* Und die Kette vom Bericht bis zur Ampel, wie sie in der Anzeige läuft. */
+var u21Bericht = sauber.text.replace('Partie beim zweiten Buch: FC Probe v SV Muster',
+                                     'Partie beim zweiten Buch: FC Probe U21 v SV Muster U21');
+var bU21 = Parser.parse(u21Bericht);
+var ergU21 = Pruefer.pruefen(bU21);
+var paarU21 = PA.pruefe({
+  seite1: { titel: bU21.titel, ausgang: bU21.seiten[0].ausgang, link: bU21.seiten[0].link },
+  seite2: { titel: bU21.partie2, ausgang: bU21.seiten[1].ausgang, link: bU21.seiten[1].link }
+});
+ok(ergU21.urteil.stufe === 'ok', 'die RECHNUNG des U21-Berichts ist fehlerfrei');
+ok(paarU21.stufe === 'falsch', 'die PAARUNG desselben Berichts ist falsch');
+var ampelU21 = B.ampel({ rechnungStufe: ergU21.urteil.stufe, paarungStufe: paarU21.stufe,
+  harteBefunde: 0, warnungen: 0, rendite: 2.53 });
+ok(ampelU21.stufe === 'rot', 'die Ampel steht trotz sauberer Rechnung auf ROT');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {

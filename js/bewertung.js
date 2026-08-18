@@ -97,12 +97,31 @@
   /* ---------- Die Ampel ----------
    * opt: rechnungStufe ('ok'|'teilweise'|'fehler'), harteBefunde (Zahl),
    *      warnungen (Zahl), rendite (effektiv, in Prozent),
-   *      istArbitrage (bool) */
+   *      paarungStufe ('passt'|'unbekannt'|'falsch') */
   function ampel(opt) {
     var gruende = [];
     var rechnungOk = opt.rechnungStufe === 'ok';
     var rechnungKaputt = opt.rechnungStufe === 'fehler';
     var r = opt.rendite;
+    var rechnungAntwort = rechnungOk ? 'geprüft, deckt sich'
+      : (rechnungKaputt ? 'weicht ab' : 'teilweise prüfbar');
+
+    /* 0) Die Paarung zuerst — und mit EIGENER Begründung. Eine falsche
+     *    Paarung macht die Rechnung nicht falsch; sie macht die ganze
+     *    Absicherung wertlos, weil zwei verschiedene Spiele gewettet
+     *    werden. Das muss dastehen, nicht „Rechenfehler". */
+    if (opt.paarungStufe === 'falsch') {
+      return {
+        stufe: 'rot',
+        kopf: 'NICHT SETZEN — ZWEI VERSCHIEDENE SPIELE',
+        satz: 'Die Rechnung ist in Ordnung, aber die beiden Bücher meinen nicht dieselbe Partie ' +
+              '(unterschiedliche Altersklasse, Anpfiffzeit oder Liga). Dann ist es keine ' +
+              'Absicherung, sondern zwei offene Wetten. Die Einzelheiten stehen in der ' +
+              'Herkunftstabelle darüber.',
+        gewinnfrage: 'NEIN — es ist keine Absicherung',
+        rechnungfrage: rechnungAntwort
+      };
+    }
 
     /* 1) Rechenfehler oder falscher Link schlagen alles. */
     if (rechnungKaputt) {
@@ -149,6 +168,10 @@
     }
     if (!rechnungOk) {
       gruende.push('Teile der Rechnung waren mangels Angaben nicht prüfbar');
+    }
+    if (opt.paarungStufe === 'unbekannt') {
+      gruende.push('nicht alle Merkmale der Partie waren vergleichbar — vor dem Setzen ' +
+                   'beide Links öffnen und Partie, Anpfiff und Liga selbst vergleichen');
     }
 
     if (gruende.length) {

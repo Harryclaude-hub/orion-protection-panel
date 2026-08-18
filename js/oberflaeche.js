@@ -27,6 +27,50 @@
 
   var zustand = { bericht: null, ergebnis: null };
 
+  /* Die Paarungsprüfung als eigener Schritt — damit sie NIE von der
+   * Zeichenreihenfolge abhängt. (Genau daran ist es am 18.08. beim
+   * ersten Einbau gescheitert: die Übersicht wurde vor der Paarung
+   * gezeichnet und meldete orange, obwohl U21 gegen erste Elf lief.) */
+  function paarungRechnen() {
+    var b = zustand.bericht;
+    if (!b) return null;
+    var akt = zustand.aktualitaet;
+    var a1 = akt && akt.seiten ? akt.seiten[0] : null;
+    var a2 = akt && akt.seiten ? akt.seiten[1] : null;
+    var s1 = b.seiten[0] || {}, s2 = b.seiten[1] || {};
+    zustand.paarung = P.paarung.pruefe({
+      seite1: {
+        titel: [b.titel, a1 && a1.frage, a1 && a1.ereignis].filter(Boolean).join(" "),
+        partie: b.titel, ausgang: s1.ausgang, link: s1.link,
+        zeit: (a1 && a1.anpfiff) || null,
+        liga: [a1 && a1.serie, b.bereich, b.tag].filter(Boolean).join(" ")
+      },
+      seite2: {
+        titel: [b.partie2, a2 && a2.frage, a2 && a2.ereignis].filter(Boolean).join(" "),
+        partie: b.partie2, ausgang: s2.ausgang, link: s2.link,
+        zeit: (a2 && a2.anpfiff) || (b.zeiten && b.zeiten.anpfiff) || null,
+        liga: [a2 && a2.serie].filter(Boolean).join(" ")
+      }
+    });
+    return zustand.paarung;
+  }
+
+  /* ---------- HERKUNFT + PAARUNG (Karams Vorgabe 18.08.) ----------
+   * Über der Übersicht: jede Angabe mit ihrer Quelle, plus der tiefe
+   * Vergleich beider Seiten (Alter, Zeit, Liga) — dieselben drei
+   * Sperren, die das Panel am 18.08. bekommen hat, hier als eigene
+   * zweite Fassung nachgebaut. */
+  function herkunftZeichnen() {
+    var b = zustand.bericht, erg = zustand.ergebnis;
+    if (!b || !erg) return;
+    var akt = zustand.aktualitaet;
+    var paar = paarungRechnen();
+
+    el("herkunft").innerHTML = P.herkunft.baue({
+      bericht: b, ergebnis: erg, aktualitaet: akt, paarung: paar
+    });
+  }
+
   /* ---------- DIE ÜBERSICHT (Karams Vorgabe 18.08.) ----------
    * Ganz oben: die vier Fragen vor dem Setzen und der Geldfluss in
    * echtem Geld. Gerechnet wird in bewertung.js/einsatz.js, gezeichnet
@@ -51,8 +95,13 @@
 
     var warn = erg.warnungen.filter(function (w) { return w.stufe === 'warnung'; }).length;
     var harte = erg.warnungen.filter(function (w) { return w.stufe === 'fehler'; }).length;
+    /* Eine nachgewiesene Fehlpaarung wiegt wie ein Rechenfehler —
+     * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
+    var paar = paarungRechnen();
+    var paarungFalsch = paar && paar.stufe === "falsch";
     var a = B.ampel({
       rechnungStufe: erg.urteil.stufe,
+      paarungStufe: paar ? paar.stufe : null,
       harteBefunde: harte,
       warnungen: warn,
       rendite: fluss ? fluss.garantierteRendite : null
@@ -79,6 +128,7 @@
       zustand.aktualitaet = akt;
       aktualitaetZeichnen(akt, b);
       uebersichtZeichnen();
+      herkunftZeichnen();
     }).catch(function (fehler) {
       el('aktualitaet-ergebnis').innerHTML = '<div class="warnung orange">Abruf fehlgeschlagen: ' + txt(fehler.message) + '</div>';
     });
@@ -469,6 +519,7 @@
     el('ergebnis').style.display = '';
     urteilZeichnen(erg, b);
     uebersichtZeichnen();
+    herkunftZeichnen();
     aufteilungZeichnen(b);
     rechenwegZeichnen(erg);
     linksZeichnen(erg);
@@ -561,6 +612,7 @@
       }
     });
 
+    if (P.werkstatt) P.werkstatt.verdrahten(function () { return zustand.bericht; });
     verlaufZeichnen();
   }
 
