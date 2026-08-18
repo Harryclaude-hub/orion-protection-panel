@@ -35,11 +35,13 @@
   --bf: #E8C15A;
   --xx: #89A2BC;
 
-  /* Rechenblatt — Papier: hell mit Zeilen, dunkle Schrift */
-  --papier:       #F2EFE4;
-  --papier-linie: #D9D3C1;
-  --papier-text:  #1C1B17;
-  --papier-leise: #6B6759;
+  /* Rechenblatt — Papier wie eine Buchseite (Karam 18.08.):
+   * cremig statt neonweiß, Tinte statt reinem Schwarz. Gemessener
+   * Kontrast Tinte auf Papier ~13,9:1 — ruhig UND gut lesbar. */
+  --papier:       #F6F2E8;
+  --papier-linie: #E0DACA;
+  --papier-text:  #2A2722;
+  --papier-leise: #6E6A5E;
 
   --eck: 12px;   /* Eckschnitt der Karten */
 }
@@ -478,3 +480,90 @@ footer { margin-top: 46px; }
   .statuschip .lampe { animation: none; }
   .planet { animation: none; }
 }
+
+/* ---------- DIE ÜBERSICHT: Ampel, vier Fragen, Geldfluss ----------
+ * Die Ampel trennt zwei Dinge, die nichts miteinander zu tun haben:
+ * ob die Rechnung stimmt, und ob am Ende Geld übrig bleibt. Rot heißt
+ * deshalb entweder „Rechenfehler" ODER „richtig gerechnet, aber kein
+ * Gewinn" — beides ist ein Grund, nicht zu setzen. */
+.ampel {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 18px; margin: 14px 0 10px;
+  border: 1px solid var(--rand);
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+  clip-path: polygon(var(--eck) 0, 100% 0, 100% calc(100% - var(--eck)), calc(100% - var(--eck)) 100%, 0 100%, 0 var(--eck));
+}
+.ampellicht {
+  width: 20px; height: 20px; border-radius: 50%; flex: 0 0 auto; margin-top: 3px;
+  background: var(--leise);
+}
+.ampeltext { display: flex; flex-direction: column; gap: 3px; }
+.ampelkopf { font-size: 1.06rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.ampelsatz { color: var(--leise); font-size: 0.94rem; line-height: 1.5; }
+.ampel.gruen  { border-color: var(--gruen); box-shadow: inset 4px 0 0 var(--gruen); }
+.ampel.orange { border-color: var(--orange); box-shadow: inset 4px 0 0 var(--orange); }
+.ampel.rot    { border-color: var(--rot); box-shadow: inset 4px 0 0 var(--rot); }
+.ampel.gruen .ampellicht  { background: var(--gruen); box-shadow: 0 0 14px var(--gruen); }
+.ampel.orange .ampellicht { background: var(--orange); box-shadow: 0 0 14px var(--orange); }
+.ampel.rot .ampellicht    { background: var(--rot); box-shadow: 0 0 14px var(--rot); }
+.ampel.gruen .ampelkopf  { color: var(--gruen); }
+.ampel.orange .ampelkopf { color: var(--orange); }
+.ampel.rot .ampelkopf    { color: var(--rot); }
+
+.uebersichtkarte { margin-top: 0; }
+.ufrage {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  padding: 9px 0; border-bottom: 1px solid var(--rand);
+}
+.ufrage:last-of-type { border-bottom: none; }
+.unr {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 3px;
+  border: 1px solid var(--rand); color: var(--signal);
+  font-family: Consolas, monospace; font-size: 0.78rem;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.utext { flex: 1 1 220px; color: var(--text); }
+.uantwort {
+  flex: 0 1 auto; font-weight: 700; text-align: right;
+  font-size: 0.95rem;
+}
+.uantwort.gruen { color: var(--gruen); }
+.uantwort.orange { color: var(--orange); }
+.uantwort.rot { color: var(--rot); }
+
+.uabschnitt { margin: 16px 0 8px; color: var(--text); font-size: 0.98rem; }
+.tabellenrahmen { overflow-x: auto; }
+.geldtabelle { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.geldtabelle th {
+  text-align: left; font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--leise); font-weight: 600; padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--rand); white-space: nowrap;
+}
+.geldtabelle td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--rand); }
+.geldtabelle tr:last-child td { border-bottom: none; }
+.geldtabelle .zahl { text-align: right; white-space: nowrap; }
+.geldtabelle th.zahl { text-align: right; }
+
+.ufazit {
+  display: flex; flex-wrap: wrap; gap: 1px; margin-top: 12px;
+  background: var(--rand); border: 1px solid var(--rand);
+}
+.ufeld {
+  flex: 1 1 130px; background: var(--karte-tief); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ufeld.gross { flex: 1.6 1 190px; }
+.ufname { font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise); }
+.ufeld b { font-size: 1.06rem; }
+.ufeld.gross b { font-size: 1.3rem; }
+.ufazit.gruen .ufeld.gross b { color: var(--gruen); }
+.ufazit.orange .ufeld.gross b { color: var(--orange); }
+.ufazit.rot .ufeld.gross b { color: var(--rot); }
+
+/* Das ausführliche Urteil bleibt erreichbar, steht aber nicht im Weg. */
+.beweis { margin: 8px 0; }
+.beweis > summary {
+  cursor: pointer; color: var(--leise); font-size: 0.82rem;
+  letter-spacing: 0.06em; padding: 4px 0;
+}
+.beweis > summary:hover { color: var(--signal); }

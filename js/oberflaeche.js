@@ -27,6 +27,63 @@
 
   var zustand = { bericht: null, ergebnis: null };
 
+  /* ---------- DIE ÜBERSICHT (Karams Vorgabe 18.08.) ----------
+   * Ganz oben: die vier Fragen vor dem Setzen und der Geldfluss in
+   * echtem Geld. Gerechnet wird in bewertung.js/einsatz.js, gezeichnet
+   * in uebersicht.js — hier werden die Teile nur zusammengeführt. */
+  function uebersichtZeichnen() {
+    var b = zustand.bericht, erg = zustand.ergebnis;
+    if (!b || !erg) return;
+    var B = P.bewertung, E = P.einsatz;
+
+    var betrag = Number(el('einsatz-betrag').value);
+    if (!isFinite(betrag) || betrag <= 0) betrag = 100;
+    var schritt = Number(el('einsatz-schritt').value) || 0.01;
+    var maxE = (b.rechnung && isFinite(b.rechnung.maxEinsatz)) ? b.rechnung.maxEinsatz : null;
+
+    var plan = (isFinite(erg.qe1) && isFinite(erg.qe2))
+      ? E.rechne({ qe1: erg.qe1, qe2: erg.qe2, gesamt: betrag, schritt: schritt, maxEinsatz: maxE })
+      : null;
+    var fluss = plan ? B.geldfluss({
+      seite1: b.seiten[0], seite2: b.seiten[1],
+      qe1: erg.qe1, qe2: erg.qe2, s1: plan.s1, s2: plan.s2
+    }) : null;
+
+    var warn = erg.warnungen.filter(function (w) { return w.stufe === 'warnung'; }).length;
+    var harte = erg.warnungen.filter(function (w) { return w.stufe === 'fehler'; }).length;
+    var a = B.ampel({
+      rechnungStufe: erg.urteil.stufe,
+      harteBefunde: harte,
+      warnungen: warn,
+      rendite: fluss ? fluss.garantierteRendite : null
+    });
+    zustand.ampel = a;
+
+    el('uebersicht').innerHTML = P.uebersicht.baue({
+      bericht: b, ergebnis: erg, plan: plan, fluss: fluss, ampel: a,
+      aktualitaet: zustand.aktualitaet,
+      einheit: (b.rechnung && b.rechnung.sEinheit) || ''
+    });
+  }
+
+  /* Der Abruf beim Anbieter läuft ab jetzt AUTOMATISCH mit (Karams
+   * Vorgabe: „Du prüfst die Links aktuell"). Einmalig je Prüfung, nie
+   * im Takt. Kommt das Ergebnis, wird die Übersicht nachgezogen. */
+  function aktualitaetHolen() {
+    var b = zustand.bericht;
+    if (!b) return;
+    zustand.aktualitaet = null;
+    el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Frage die Anbieter ab, Chef …</div>';
+    P.aktualitaet.pruefeBericht(b).then(function (akt) {
+      if (zustand.bericht !== b) return;   /* zwischenzeitlich neuer Bericht */
+      zustand.aktualitaet = akt;
+      aktualitaetZeichnen(akt, b);
+      uebersichtZeichnen();
+    }).catch(function (fehler) {
+      el('aktualitaet-ergebnis').innerHTML = '<div class="warnung orange">Abruf fehlgeschlagen: ' + txt(fehler.message) + '</div>';
+    });
+  }
+
   /* ---------- Aufteilung ---------- */
   function seiteKarte(s) {
     if (!s) return '<div class="karte seite">Seite fehlt im Bericht.</div>';
@@ -411,12 +468,14 @@
 
     el('ergebnis').style.display = '';
     urteilZeichnen(erg, b);
+    uebersichtZeichnen();
     aufteilungZeichnen(b);
     rechenwegZeichnen(erg);
     linksZeichnen(erg);
     warnungenZeichnen(erg);
     einsatzZeichnen();
-    el('aktualitaet-ergebnis').innerHTML = '<div class="leise">Bereit, Chef — der Abruf passiert nur auf Befehl, einmalig.</div>';
+    zustand.aktualitaet = null;
+    aktualitaetHolen();
 
     P.verlauf.speichern(b, erg).then(function (wo) {
       el('speicher-hinweis').textContent = wo.wo === 'konto' ? 'Jawohl, Chef — im Konto abgelegt.'
@@ -441,21 +500,16 @@
     /* Einsatzrechner: rechnet sofort mit, während man tippt — reine
      * Arithmetik auf zwei Zahlen, das kostet nichts. */
     ['einsatz-betrag', 'einsatz-schritt'].forEach(function (id) {
-      el(id).addEventListener('input', function () { if (zustand.bericht) einsatzZeichnen(); });
-      el(id).addEventListener('change', function () { if (zustand.bericht) einsatzZeichnen(); });
+      el(id).addEventListener('input', function () { if (zustand.bericht) { einsatzZeichnen(); uebersichtZeichnen(); } });
+      el(id).addEventListener('change', function () { if (zustand.bericht) { einsatzZeichnen(); uebersichtZeichnen(); } });
     });
 
     el('aktualitaet-knopf').addEventListener('click', function () {
       if (!zustand.bericht) return;
       var kn = el('aktualitaet-knopf');
       kn.textContent = 'Frage die Anbieter ab, Chef …';
-      P.aktualitaet.pruefeBericht(zustand.bericht).then(function (a) {
-        kn.textContent = 'Jetzt beim Anbieter nachsehen';
-        aktualitaetZeichnen(a, zustand.bericht);
-      }).catch(function (fehler) {
-        kn.textContent = 'Jetzt beim Anbieter nachsehen';
-        el('aktualitaet-ergebnis').innerHTML = '<div class="warnung orange">Abruf fehlgeschlagen: ' + txt(fehler.message) + '</div>';
-      });
+      aktualitaetHolen();
+      setTimeout(function () { kn.textContent = 'Erneut beim Anbieter nachsehen'; }, 400);
     });
 
     el('anmelden').addEventListener('click', function () {

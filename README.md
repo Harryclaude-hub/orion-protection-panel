@@ -22,6 +22,32 @@ Effekte: die Seite bleibt auf einem normalen Laptop flüssig, Animationen sind
 sparsame CSS-Arbeit mit `prefers-reduced-motion`-Rücksicht. Nach jeder
 Designarbeit laufen die Funktions-Selbsttests.
 
+## Die Übersicht: lohnt es sich — und stimmt die Rechnung?
+
+Ganz oben, vor allen Einzelheiten, beantwortet der Prüfstand vier Fragen:
+
+1. **Mache ich Gewinn?** (ja / knapp / nein, mit Prozentzahl)
+2. **Stimmt die Rechnung?** (deckt sich / weicht ab / teilweise prüfbar)
+3. **Führen die Links zur Partie?**
+4. **Sind die Kurse noch aktuell?** (der Anbieter-Abruf startet automatisch mit)
+
+Darunter der Geldfluss in echtem Geld — je Seite: Einsatz, brutto zurück,
+**Gebühr in Euro**, netto zurück, Gewinn. Und die Zusammenfassung: eingesetzt,
+davon Gebühren, sicher zurück, garantierter Gewinn.
+
+### Die Ampel trennt zwei Dinge, die nicht dasselbe sind
+
+| Farbe | Bedeutung |
+|---|---|
+| **GRÜN** | Rechnung stimmt UND es bleibt mindestens 1 % sicherer Gewinn |
+| **ORANGE** | knapp: unter 1 %, oder Warnzeichen, oder Teile nicht prüfbar |
+| **ROT** | Rechenfehler / falscher Link — **oder: Rechnung richtig, aber kein Gewinn** |
+
+Der letzte Fall ist der wichtigste: Ein Bericht kann fehlerfrei gerechnet sein
+und trotzdem keinen Cent bringen. Dann steht dort ausdrücklich
+**„RECHNUNG RICHTIG — ABER KEIN GEWINN"**, während die Rechenprüfung weiter
+„deckt sich" meldet. Beides ist wahr, und beides muss man sehen.
+
 ## Was es tut
 
 1. **Einfügen:** Im Panel auf einer Karte „Kopieren" drücken, den Bericht hier
@@ -89,6 +115,8 @@ Designarbeit laufen die Funktions-Selbsttests.
 | `js/parser.js` | zerlegt den kopierten Bericht, rät nie |
 | `js/linkpruefung.js` | Buch↔Adresse + Wortabgleich der Links, drei Zustände |
 | `js/einsatz.js` | Einsatzrechner: Rundung, Gewinn je Ausgang, Marge, Puffer |
+| `js/bewertung.js` | Ampel (lohnt es sich?) + Geldfluss mit Gebühren in Geld |
+| `js/uebersicht.js` | die Übersicht ganz oben: vier Fragen + Geldtabelle |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
 | `js/aktualitaet.js` | einmaliger Anbieter-Abruf + Neuberechnung |
 | `js/verlauf.js` | Anmeldung (Supabase auth/v1) + Ablage (rest/v1), localStorage-Rückfall |
@@ -130,7 +158,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js` — **65 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js` — **129 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde

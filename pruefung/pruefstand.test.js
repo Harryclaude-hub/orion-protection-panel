@@ -338,6 +338,80 @@ ok(kippt && kippt.spielraumProzent === 0, 'ohne Vorteil ist der Puffer 0, nicht 
 ok(Math.abs((grob.s1 * qeA - grob.eingesetzt) - grob.gewinn1) < 1e-9, 'Gewinn 1 = Auszahlung 1 − alles Eingesetzte');
 ok(Math.abs((grob.s2 * qeB - grob.eingesetzt) - grob.gewinn2) < 1e-9, 'Gewinn 2 = Auszahlung 2 − alles Eingesetzte');
 
+/* ---------- 13) Ampel und Geldfluss ---------- */
+console.log('13) Ampel: stimmt die Rechnung UND lohnt es sich?');
+var B = require('../js/bewertung.js');
+
+/* DER wichtigste Fall (Karams Vorgabe): Rechnung fehlerfrei, aber kein Plus. */
+var keinPlus = B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 0, rendite: -0.42 });
+ok(keinPlus.stufe === 'rot', 'kein Gewinn ist ROT, auch wenn die Rechnung stimmt');
+ok(keinPlus.kopf.indexOf('RECHNUNG RICHTIG') >= 0, 'der Kopf sagt ausdrücklich: Rechnung richtig');
+ok(keinPlus.kopf.indexOf('KEIN GEWINN') >= 0, 'und trotzdem: kein Gewinn');
+ok(keinPlus.rechnungfrage.indexOf('deckt sich') >= 0, 'Frage 2 bleibt korrekt positiv beantwortet');
+ok(keinPlus.gewinnfrage.indexOf('NEIN') >= 0, 'Frage 1 wird klar mit NEIN beantwortet');
+
+/* Genau null ist auch kein Gewinn. */
+ok(B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 0, rendite: 0 }).stufe === 'rot',
+  'exakt 0 % ist kein Gewinn');
+
+/* Rechenfehler schlägt alles — auch bei traumhafter Rendite. */
+var kaputtAmpel = B.ampel({ rechnungStufe: 'fehler', harteBefunde: 1, warnungen: 0, rendite: 8.0 });
+ok(kaputtAmpel.stufe === 'rot', 'Rechenfehler ist ROT, egal wie hoch die Rendite aussieht');
+ok(kaputtAmpel.gewinnfrage.indexOf('unklar') >= 0, 'bei kaputter Rechnung ist der Gewinn unklar, nicht bejaht');
+
+/* Knapp = orange. */
+var knapp = B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 0, rendite: 0.6 });
+ok(knapp.stufe === 'orange', '0,6 % ist knapp (orange)');
+var mitWarnung = B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 2, rendite: 2.5 });
+ok(mitWarnung.stufe === 'orange', 'Warnzeichen drücken auf orange, auch bei 2,5 %');
+var teilweise = B.ampel({ rechnungStufe: 'teilweise', harteBefunde: 0, warnungen: 0, rendite: 2.5 });
+ok(teilweise.stufe === 'orange', 'nicht voll prüfbare Rechnung ist höchstens orange');
+
+/* Grün nur, wenn wirklich alles passt. */
+var gut = B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 0, rendite: 2.53 });
+ok(gut.stufe === 'gruen', 'saubere Rechnung + 2,53 % = grün');
+ok(gut.gewinnfrage.indexOf('JA') >= 0, 'Frage 1: JA');
+
+/* Ohne berechenbare Rendite wird NICHT geraten. */
+ok(B.ampel({ rechnungStufe: 'ok', harteBefunde: 0, warnungen: 0, rendite: null }).stufe === 'orange',
+  'ohne Renditezahl: orange, nicht grün');
+
+/* Geldfluss: Gebühren in echtem Geld. */
+var bGeld = Parser.parse(sauber.text);
+var ergGeld = Pruefer.pruefen(bGeld);
+var planGeld = E.rechne({ qe1: ergGeld.qe1, qe2: ergGeld.qe2, gesamt: 100, schritt: 0.01 });
+var fluss = B.geldfluss({ seite1: bGeld.seiten[0], seite2: bGeld.seiten[1],
+  qe1: ergGeld.qe1, qe2: ergGeld.qe2, s1: planGeld.s1, s2: planGeld.s2 });
+ok(!!fluss, 'Geldfluss wird aufgestellt');
+ok(Math.abs(fluss.gesamtEinsatz - 100) < 0.02, 'Gesamteinsatz stimmt');
+/* Polymarket: 0,480 Anteilspreis, 4 % Gebühr. Brutto = Einsatz/0,480. */
+ok(Math.abs(fluss.seite1.bruttoRueckgabe - planGeld.s1 / 0.480) < 0.01, 'brutto Seite 1 = Einsatz ÷ Preis');
+ok(fluss.seite1.gebuehrGeld > 0, 'Gebühr Seite 1 ist positiv (' + fluss.seite1.gebuehrGeld.toFixed(2) + ')');
+ok(Math.abs(fluss.seite1.bruttoRueckgabe - fluss.seite1.gebuehrGeld - fluss.seite1.nettoRueckgabe) < 1e-9,
+  'brutto − Gebühr = netto (Seite 1)');
+/* Smarkets Back 2,06 bei 2 %: brutto = Einsatz × 2,06. */
+ok(Math.abs(fluss.seite2.bruttoRueckgabe - planGeld.s2 * 2.06) < 0.01, 'brutto Seite 2 = Einsatz × Quote');
+ok(Math.abs(fluss.seite2.bruttoRueckgabe - fluss.seite2.gebuehrGeld - fluss.seite2.nettoRueckgabe) < 1e-9,
+  'brutto − Gebühr = netto (Seite 2)');
+ok(Math.abs(fluss.garantierterGewinn - Math.min(fluss.seite1.gewinn, fluss.seite2.gewinn)) < 1e-9,
+  'garantiert = schlechterer Ausgang');
+ok(Math.abs(fluss.garantierteRendite - 2.53) < 0.05, 'garantierte Rendite trifft die Panel-Zahl');
+ok(fluss.gebuehrMin <= fluss.gebuehrMax, 'Gebührenspanne ist richtig herum');
+
+/* Die Antworten auf Frage 3 und 4. */
+var U = require('../js/uebersicht.js');
+ok(U.linkAntwort(ergGeld.links).klasse === 'gruen', 'beide Links passen → grün');
+ok(U.linkAntwort([{ nr: 2, urteil: 'falsch' }]).klasse === 'rot', 'falscher Link → rot');
+ok(U.linkAntwort([{ nr: 1, urteil: 'unpruefbar' }]).klasse === 'orange', 'nicht prüfbarer Link → orange');
+ok(U.aktualitaetAntwort(null, []).klasse === 'orange', 'noch kein Abruf → orange');
+var seitenProbe = [{ art: 'preis', wert: 0.48 }, { art: 'quote', wert: 2.06 }];
+ok(U.aktualitaetAntwort({ seiten: [{ status: 'ok', wert: 0.48 }, { status: 'unpruefbar' }] }, seitenProbe).klasse === 'gruen',
+  'Kurs unverändert → grün');
+ok(U.aktualitaetAntwort({ seiten: [{ status: 'ok', wert: 0.44 }, { status: 'unpruefbar' }] }, seitenProbe).klasse === 'rot',
+  'Kurs hat sich bewegt → rot');
+ok(U.aktualitaetAntwort({ seiten: [{ status: 'vorbei' }, { status: 'unpruefbar' }] }, seitenProbe).klasse === 'rot',
+  'Markt geschlossen → rot');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {
