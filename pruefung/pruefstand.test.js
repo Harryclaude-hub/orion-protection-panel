@@ -670,6 +670,176 @@ ok(gleich1.gewinn.stufe === gleich2.gewinn.stufe,
 ok(gleich1.rechnung.stufe !== gleich2.rechnung.stufe,
   'waehrend die Rechnungs-Lampe sehr wohl unterscheidet');
 
+/* ---------- 19) Waehrungen ---------- */
+console.log('19) Waehrungen: Dollar, Pfund und Euro nicht verwechseln');
+var W = require('../js/waehrung.js');
+/* Feste Kurse fuer den Test, damit er ohne Netz laeuft.
+   Gemessen am 19.08.2026: 1 EUR = 1,1605 USD = 0,85608 GBP. */
+W.kurseSetzen({ EUR: 1, USD: 1.1605, GBP: 0.85608, stand: '2026-08-19' });
+
+/* Welches Buch fuehrt was. */
+ok(W.waehrungVon('polymarket').code === 'USD', 'Polymarket fuehrt Dollar');
+ok(W.waehrungVon('kalshi').code === 'USD', 'Kalshi fuehrt Dollar');
+ok(W.waehrungVon('smarkets').code === 'GBP', 'Smarkets fuehrt PFUND, nicht Dollar');
+ok(W.waehrungVon('betfair').code === null, 'Betfair wird NICHT geraten');
+ok(W.waehrungVon('betfair').sicher === false, 'und ist als unsicher gekennzeichnet');
+ok(W.waehrungVon('betfair', 'EUR').code === 'EUR', 'eingestellte Betfair-Waehrung wird uebernommen');
+ok(W.waehrungVon('betfair', 'EUR').sicher === false, 'bleibt aber als eingestellt und nicht gemessen markiert');
+ok(W.waehrungVon('polymarket').sicher === true, 'Polymarket dagegen ist belegt');
+
+/* Umrechnen. */
+ok(Math.abs(W.rechne(100, 'EUR', 'USD') - 116.05) < 0.01, '100 Euro sind 116,05 Dollar');
+ok(Math.abs(W.rechne(100, 'EUR', 'GBP') - 85.608) < 0.01, '100 Euro sind 85,61 Pfund');
+ok(Math.abs(W.rechne(116.05, 'USD', 'EUR') - 100) < 0.01, 'und zurueck');
+ok(W.rechne(100, 'EUR', 'EUR') === 100, 'gleiche Waehrung bleibt unveraendert');
+/* Die Gegenprobe, die den ganzen Sinn ausmacht: */
+var hundertDollar = W.rechne(100, 'USD', 'EUR');
+var hundertPfund = W.rechne(100, 'GBP', 'EUR');
+ok(Math.abs(hundertDollar - 86.17) < 0.05, '100 Dollar sind rund 86 Euro');
+ok(Math.abs(hundertPfund - 116.81) < 0.05, '100 Pfund sind rund 117 Euro');
+ok(hundertPfund > hundertDollar * 1.3, 'zwischen 100 Dollar und 100 Pfund liegen ueber 30 Prozent');
+
+/* Ohne Kurs wird NICHT geschaetzt. */
+W.kurseSetzen(null);
+ok(W.rechne(100, 'EUR', 'USD') === null, 'ohne Kurs kommt null, keine geratene Zahl');
+W.kurseSetzen({ EUR: 1, USD: 1.1605, GBP: 0.85608, stand: '2026-08-19' });
+
+/* Betraege tragen immer ihr Zeichen. */
+ok(W.geld(49.71, 'EUR').indexOf('€') > 0, 'Euro-Betrag traegt das Eurozeichen');
+ok(W.geld(49.71, 'USD').indexOf('$') > 0, 'Dollar-Betrag traegt das Dollarzeichen');
+ok(W.geld(49.71, 'GBP').indexOf('£') > 0, 'Pfund-Betrag traegt das Pfundzeichen');
+ok(W.geld(49.71, null).indexOf('Waehrung offen') > 0, 'ohne Waehrung wird das gesagt, nicht unterstellt');
+ok(W.geld(null, 'EUR') === 'unbekannt', 'ohne Betrag: unbekannt');
+
+/* Die Lage einer Pruefung: gemischt oder nicht. */
+var gemischt = W.lage([{ buch: 'Polymarket', buchNorm: 'polymarket' }, { buch: 'Smarkets', buchNorm: 'smarkets' }]);
+ok(gemischt.gemischt === true, 'Polymarket gegen Smarkets ist USD gegen GBP, also gemischt');
+ok(gemischt.text.indexOf('VERSCHIEDENE') > 0, 'und wird deutlich benannt');
+var gleich = W.lage([{ buch: 'Polymarket', buchNorm: 'polymarket' }, { buch: 'Kalshi', buchNorm: 'kalshi' }]);
+ok(gleich.gemischt === false, 'Polymarket gegen Kalshi ist zweimal USD');
+ok(gleich.text.indexOf('Keine Verwechslungsgefahr') > 0, 'und wird als unkritisch gemeldet');
+var offen = W.lage([{ buch: 'Polymarket', buchNorm: 'polymarket' }, { buch: 'Betfair', buchNorm: 'betfair' }]);
+ok(offen.offen === true, 'mit Betfair ohne Einstellung bleibt eine Seite offen');
+
+/* Die Einsatz-Sichten: derselbe Einsatz in zwei Waehrungen. */
+var sichtPM = W.einsatzSichten(49.71, 'EUR', 'USD');
+ok(sichtPM.leit.text.indexOf('€') > 0, 'Leitbetrag in Euro');
+ok(Math.abs(sichtPM.konto.betrag - 57.69) < 0.05, '49,71 Euro sind 57,69 Dollar auf dem Polymarket-Konto');
+ok(sichtPM.konto.text.indexOf('$') > 0, 'und der Kontobetrag traegt das Dollarzeichen');
+ok(sichtPM.gleich === false, 'die beiden Waehrungen sind als verschieden erkannt');
+var sichtGleich = W.einsatzSichten(49.71, 'EUR', 'EUR');
+ok(sichtGleich.gleich === true, 'bei gleicher Waehrung wird das vermerkt');
+var sichtOffen = W.einsatzSichten(49.71, 'EUR', null);
+ok(sichtOffen.konto.betrag === null, 'ohne Kontowaehrung kein Kontobetrag');
+ok(sichtOffen.konto.text.indexOf('nicht bestimmt') >= 0, 'sondern eine ehrliche Auskunft');
+
+/* Der eigentliche Schutz: das Verhaeltnis der Einsaetze darf sich durch
+   das Umrechnen NICHT aendern, sonst waere die Absicherung kaputt. */
+var qeA = R.qeAnteil(0.48, 0.04), qeB = R.qeBack(2.06, 0.02);
+var planEUR = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 0.01 });
+var s1USD = W.rechne(planEUR.s1, 'EUR', 'USD');
+var s2GBP = W.rechne(planEUR.s2, 'EUR', 'GBP');
+/* Zurueckgerechnet muessen beide wieder dasselbe Verhaeltnis ergeben. */
+var zurueck1 = W.rechne(s1USD, 'USD', 'EUR');
+var zurueck2 = W.rechne(s2GBP, 'GBP', 'EUR');
+ok(Math.abs(zurueck1 / zurueck2 - planEUR.s1 / planEUR.s2) < 1e-9,
+  'das Verhaeltnis der Einsaetze ueberlebt das Umrechnen unveraendert');
+ok(Math.abs(zurueck1 + zurueck2 - 100) < 0.01, 'und die Summe bleibt der Einsatz');
+
+/* Und die Kernaussage: Quoten haben KEINE Waehrung. */
+ok(R.qeAnteil(0.48, 0.04) === qeA, 'die Effektivquote aendert sich durch keinen Wechselkurs');
+
+/* ---------- 20) Die Rechner-Sammlung ---------- */
+console.log('20) Die Rechner');
+var RE = require('../js/rechner.js');
+
+/* Quotenformate: dieselbe Wette, vier Schreibweisen. */
+var d25 = RE.ausDezimal(2.50);
+ok(Math.abs(d25.wahrscheinlichkeit - 40) < 1e-9, 'Quote 2,50 heisst 40 Prozent');
+ok(d25.amerikanisch === 150, 'und amerikanisch +150');
+ok(d25.bruch.text === '3/2', 'und als Bruch 3/2');
+var d15 = RE.ausDezimal(1.50);
+ok(d15.amerikanisch === -200, 'Quote 1,50 ist amerikanisch -200 (unter 2 wird negativ)');
+ok(RE.ausAmerikanisch(-200).dezimal - 1.50 < 1e-9, 'und wieder zurueck ergibt 1,50');
+ok(Math.abs(RE.ausAmerikanisch(150).dezimal - 2.50) < 1e-9, '+150 ergibt 2,50');
+ok(Math.abs(RE.ausBruch(3, 2).dezimal - 2.50) < 1e-9, '3/2 ergibt 2,50');
+ok(Math.abs(RE.ausWahrscheinlichkeit(40).dezimal - 2.50) < 1e-9, '40 Prozent ergibt 2,50');
+/* Der Anteilspreis der Prognosemaerkte ist nichts anderes. */
+ok(Math.abs(RE.ausAnteilspreis(0.40).dezimal - 2.50) < 1e-9, 'Anteilspreis 0,40 ist Quote 2,50');
+ok(Math.abs(RE.ausAnteilspreis(0.48).wahrscheinlichkeit - 48) < 1e-9, 'Anteilspreis 0,48 sind 48 Prozent');
+/* Unfug wird abgewiesen, nicht verbogen. */
+ok(RE.ausDezimal(0.9) === null, 'Dezimalquote unter 1 wird abgewiesen');
+ok(RE.ausAnteilspreis(1.5) === null, 'Anteilspreis ueber 1 wird abgewiesen');
+ok(RE.ausWahrscheinlichkeit(0) === null, 'null Prozent wird abgewiesen');
+
+/* Marge und faire Quoten. */
+var m = RE.marge([1.90, 1.90]);
+ok(Math.abs(m.kehrwertsumme - 1.0526315) < 1e-5, 'zweimal 1,90 ergibt Kehrwertsumme 1,0526');
+ok(Math.abs(m.margeProzent - 5.263) < 0.01, 'das sind 5,26 Prozent Marge');
+ok(Math.abs(m.fair[0] - 2.0) < 1e-6, 'fair waeren zweimal 2,00');
+ok(m.istArbitrage === false, 'und es ist KEINE Arbitrage');
+/* Gegenprobe: liegt die Summe unter 1, ist es genau das, was das Panel sucht. */
+var mArb = RE.marge([2.10, 2.10]);
+ok(mArb.istArbitrage === true, 'zweimal 2,10 IST Arbitrage');
+ok(mArb.margeProzent < 0, 'und die Marge ist negativ, also zu unseren Gunsten');
+ok(RE.marge([1.90]) === null, 'eine einzelne Quote ergibt keine Marge');
+
+/* Erwartungswert. */
+var ew = RE.erwartungswert(2.50, 45, 100);
+ok(Math.abs(ew.wertProzent - 12.5) < 1e-9, 'Quote 2,50 bei 45 Prozent: plus 12,5 Prozent Erwartungswert');
+ok(Math.abs(ew.erwarteterGewinn - 12.5) < 1e-9, 'auf 100 Einsatz also 12,50');
+ok(ew.lohntSich === true, 'und lohnt sich');
+ok(Math.abs(ew.mindestQuote - 2.2222) < 0.001, 'ab Quote 2,222 waere es gerade lohnend');
+var ewSchlecht = RE.erwartungswert(1.80, 45, 100);
+ok(ewSchlecht.lohntSich === false, 'Quote 1,80 bei 45 Prozent lohnt sich NICHT');
+ok(ewSchlecht.wertProzent < 0, 'der Erwartungswert ist negativ');
+
+/* Kelly. */
+var kel = RE.kelly(2.50, 45, 1000);
+ok(Math.abs(kel.anteilProzent - 8.3333) < 0.001, 'Kelly ergibt 8,33 Prozent des Kapitals');
+ok(Math.abs(kel.einsatz - 83.333) < 0.01, 'bei 1000 Kapital also 83,33');
+ok(Math.abs(kel.einsatzHalb - kel.einsatz / 2) < 1e-9, 'halbes Kelly ist genau die Haelfte');
+ok(kel.halbesKellyProzent < kel.anteilProzent, 'und liegt niedriger, das ist der Sinn');
+var kelSchlecht = RE.kelly(1.80, 45, 1000);
+ok(kelSchlecht.lohntSich === false, 'ohne Vorteil rechnet Kelly keinen Einsatz aus');
+ok(kelSchlecht.anteil < 0, 'der Anteil ist negativ, also Finger weg');
+
+/* Dutching auf drei Ausgaenge. */
+var du = RE.dutching([2.50, 3.20, 3.60], 100);
+ok(du.einsaetze.length === 3, 'drei Einsaetze fuer drei Ausgaenge');
+ok(Math.abs(du.einsaetze.reduce(function (a, b) { return a + b; }, 0) - 100) < 1e-9,
+  'die Einsaetze ergeben zusammen genau den Einsatz');
+/* Der Kern: JEDER Ausgang zahlt dasselbe. */
+du.einsaetze.forEach(function (s, i) {
+  ok(Math.abs(s * du.quoten[i] - du.auszahlung) < 1e-9,
+    'Ausgang ' + (i + 1) + ' zahlt dieselbe Summe aus');
+});
+ok(du.sicher === true, 'bei Kehrwertsumme unter 1 ist es ein sicherer Gewinn');
+var duVerlust = RE.dutching([2.00, 2.00, 2.00], 100);
+ok(duVerlust.sicher === false, 'dreimal 2,00 ist ein sicherer VERLUST');
+ok(duVerlust.gewinn < 0, 'und der Betrag ist negativ');
+
+/* Der Waehrungsrechner nutzt dieselbe Kursquelle wie alles andere. */
+W.kurseSetzen({ EUR: 1, USD: 1.1605, GBP: 0.85608, stand: '2026-08-19' });
+var wr = RE.waehrungRechnen(100, 'EUR', 'USD', W);
+ok(Math.abs(wr.ergebnis - 116.05) < 0.01, '100 Euro sind 116,05 Dollar');
+ok(wr.text.indexOf('$') > 0, 'das Ergebnis traegt das Dollarzeichen');
+ok(wr.kursText.indexOf('1 EUR') === 0, 'der Kurs steht als Satz dabei');
+var wrRueck = RE.waehrungRechnen(116.05, 'USD', 'EUR', W);
+ok(Math.abs(wrRueck.ergebnis - 100) < 0.01, 'und zurueck ergibt wieder 100 Euro');
+W.kurseSetzen(null);
+ok(RE.waehrungRechnen(100, 'EUR', 'USD', W) === null, 'ohne Kurs kein Ergebnis, keine geratene Zahl');
+W.kurseSetzen({ EUR: 1, USD: 1.1605, GBP: 0.85608, stand: '2026-08-19' });
+
+/* Und die Bruecke zur eigentlichen Pruefung: Dutching auf ZWEI Ausgaenge
+   muss dasselbe ergeben wie der Einsatzrechner des Prueflings. */
+var duZwei = RE.dutching([qeA, qeB], 100);
+var planZwei = E.rechne({ qe1: qeA, qe2: qeB, gesamt: 100, schritt: 0.01 });
+ok(Math.abs(duZwei.einsaetze[0] - planZwei.ideal1) < 0.01,
+  'Dutching auf zwei Ausgaenge deckt sich mit dem Einsatzrechner');
+ok(Math.abs(duZwei.renditeProzent - planZwei.idealRendite) < 0.01,
+  'und ergibt dieselbe Rendite, zwei Wege zum selben Ergebnis');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {

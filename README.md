@@ -21,6 +21,65 @@ Effekte: die Seite bleibt auf einem normalen Laptop flüssig, Animationen sind
 sparsame CSS-Arbeit mit `prefers-reduced-motion`-Rücksicht. Nach jeder
 Designarbeit laufen die Funktions-Selbsttests.
 
+## Dollar, Pfund und Euro werden nicht verwechselt
+
+Die vier Bücher führen **nicht dieselbe Währung**. Ein Betrag in Dollar und
+einer in Pfund sehen auf dem Schirm gleich aus und sind es nicht: zwischen
+100 Dollar und 100 Pfund liegen über 30 Prozent.
+
+| Buch | Währung | woher |
+|---|---|---|
+| Polymarket | **USD** | handelt in USDC, einem Dollar-Wertzeichen |
+| Kalshi | **USD** | rechnet in US-Cent |
+| Smarkets | **GBP** | britische Börse, Konten in Pfund |
+| Betfair | hängt am Konto | von außen nicht bestimmbar, deshalb einstellbar statt geraten |
+
+### Der entscheidende Unterschied
+
+Quoten, Anteilspreise, Kehrwertsumme und Rendite sind **Verhältnisse**. Sie
+haben keine Währung und ändern sich durch keinen Wechselkurs. Nur **Beträge**
+haben eine Währung: Einsatz, Menge, Auszahlung, Gewinn. Umgerechnet wird
+deshalb ausschließlich mit Beträgen, nie mit Quoten. Genau diese Trennung
+verhindert die Verwechslung.
+
+### Beide Zahlen nebeneinander, wo es zählt
+
+Die Aufteilung wird in einer Leitwährung gerechnet (einstellbar, Standard Euro),
+denn nur dann stimmt das Verhältnis. Im Einsatzplan steht dann jede Seite doppelt:
+
+```
+Polymarket   50,00 €   auf dem Konto: 58,03 $ (USD)
+Smarkets     50,00 €   auf dem Konto: 42,80 £ (GBP)
+garantiert  +1,94 €
+```
+
+Oben steht eine Tafel, welche Seite welche Währung führt und ob gemischt wird.
+Kurse kommen von der EZB (frankfurter.dev), dieselbe Quelle wie im Panel. **Ohne
+Kurs wird nicht umgerechnet**, sondern gesagt, dass der Kurs fehlt.
+
+Geprüft ist auch das, worauf es ankommt: Das **Verhältnis der Einsätze überlebt
+das Umrechnen unverändert**, sonst wäre die Absicherung kaputt.
+
+## Rechner zum Nachrechnen
+
+Die Rechenarten eines großen Surebet-Dienstes, fachlich nachgebaut und einzeln
+nachvollziehbar:
+
+| Rechner | wofür |
+|---|---|
+| **Währungsrechner** | Knopf oben rechts: Euro, Dollar, Pfund hin und her, mit Kurssatz und Gegenrichtung |
+| **Quotenformate** | Dezimal, Anteilspreis, Prozent, amerikanisch, Bruch. Dieselbe Wette, vier Schreibweisen |
+| **Marge und faire Quoten** | wie viel Aufschlag in den Quoten steckt, und wie sie ohne ihn stünden |
+| **Erwartungswert und Kelly** | lohnt sich eine einzelne Wette, und wie viel vom Kapital. Mit halbem Kelly, weil die eigene Wahrscheinlichkeit selten genau stimmt |
+| **Dutching** | Aufteilung auf drei und mehr Ausgänge, etwa Heim, Unentschieden, Auswärts |
+
+Bewusst **nicht** dabei: Kombiwetten, Systemwetten, Bonus-Umsatzrechner. Die
+gehören zu Buchmachern, nicht zu Börsen. Ein Rechner, den man nie braucht, ist
+kein Gewinn, sondern eine Stolperstelle.
+
+Als Gegenprobe ist getestet, dass **Dutching auf zwei Ausgänge dasselbe ergibt
+wie der Einsatzrechner** der Prüfung: zwei Wege, ein Ergebnis.
+
 ## Zwei getrennte Ampeln, weil es zwei getrennte Fragen sind
 
 Ganz oben stehen zwei gleich grosse Lampen nebeneinander:
@@ -219,6 +278,10 @@ erhalten bleibt.
 | `js/bewertung.js` | Ampel (lohnt es sich?) + Geldfluss mit Gebühren in Geld |
 | `js/uebersicht.js` | die Übersicht ganz oben: vier Fragen + Geldtabelle |
 | `js/paarung.js` | Alter, Anpfiffzeit, Liga, meinen beide dasselbe Spiel? |
+| `js/waehrung.js` | welches Buch führt welche Währung, Kurse, Umrechnung |
+| `js/abgleich.js` | Bericht gegen Anbieter, Wert für Wert |
+| `js/rechner.js` | Quotenformate, Marge, Erwartungswert, Kelly, Dutching, Währung |
+| `js/rechnerflaeche.js` | Anzeige der Rechner und des Währungsrechners |
 | `js/herkunft.js` | Herkunftstabelle mit Quellen-Links + Paarungsvergleich |
 | `js/werkstatt.js` | Rechen-Werkstatt zum Selbernachrechnen (ohne Rückwirkung) |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
@@ -262,7 +325,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js`, **223 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js`, **306 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde

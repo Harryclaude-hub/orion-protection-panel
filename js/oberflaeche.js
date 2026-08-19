@@ -59,6 +59,68 @@
     return zustand.paarung;
   }
 
+  /* ---------- WAEHRUNGEN (Karam 19.08.) ----------
+   * Die vier Buecher fuehren nicht dieselbe Waehrung. Ein Betrag in
+   * Dollar und einer in Pfund sehen gleich aus und sind es nicht.
+   * Diese Tafel sagt Schwarz auf Weiss, welche Seite welche Waehrung
+   * hat, und der Einsatzplan zeigt jeden Betrag doppelt: in der
+   * Leitwaehrung und in der Waehrung des Kontos. */
+  function leitWaehrung() {
+    var e = el("leit-waehrung");
+    return (e && e.value) || "EUR";
+  }
+  function betfairWaehrung() {
+    var e = el("bf-waehrung");
+    return (e && e.value) || null;
+  }
+
+  function waehrungZeichnen() {
+    var b = zustand.bericht;
+    if (!b) return;
+    var W = P.waehrung;
+    var lage = W.lage(b.seiten, betfairWaehrung());
+    zustand.waehrungLage = lage;
+    var k = W.kurseJetzt();
+
+    var zeilen = lage.seiten.map(function (s, i) {
+      var sicher = s.code
+        ? (s.sicher ? "belegt" : "von dir eingestellt")
+        : "nicht bestimmbar";
+      var marke = s.code ? (s.sicher ? "ok" : "unpruefbar") : "unpruefbar";
+      return "<tr><td class=\"hkwas\">Seite " + txt(i + 1) + " " + txt(s.buch || "?") + "</td>" +
+        "<td class=\"mono\"><b>" + txt(s.code || "offen") + "</b> " + txt(W.zeichen(s.code)) + "</td>" +
+        "<td><span class=\"marke " + marke + "\">" + txt(sicher) + "</span>" +
+        "<div class=\"leise klein\">" + txt(s.grund) + "</div></td></tr>";
+    }).join("");
+
+    var kursZeile = k
+      ? "1 Euro = " + k.USD.toFixed(4) + " Dollar = " + k.GBP.toFixed(4) +
+        " Pfund (EZB-Referenz, Stand " + txt(k.stand) + ")"
+      : "Kein Wechselkurs geladen. Betraege werden dann NICHT umgerechnet, " +
+        "sondern nur in ihrer eigenen Waehrung gezeigt.";
+
+    el("waehrung-tafel").innerHTML =
+      "<div class=\"karte\"><div class=\"kartentitel\">Welche Seite fuehrt welche Waehrung</div>" +
+      "<div class=\"warnung " + (lage.gemischt ? "orange" : (lage.offen ? "orange" : "gruen")) + "\">" +
+        txt(lage.text) + "</div>" +
+      "<div class=\"tabellenrahmen\"><table class=\"hktabelle\">" +
+      "<thead><tr><th>Seite</th><th>Waehrung</th><th>woher</th></tr></thead>" +
+      "<tbody>" + zeilen + "</tbody></table></div>" +
+      "<div class=\"leise klein\" style=\"margin-top:8px\">" + txt(kursZeile) + "</div>" +
+      "<div class=\"leise klein\">Quoten, Kehrwertsumme und Rendite sind Verhaeltnisse und haben " +
+      "KEINE Waehrung. Nur Einsatz, Menge, Auszahlung und Gewinn sind Betraege.</div></div>";
+  }
+
+  /* Die Kurse einmal je Sitzung holen, danach steht die Tafel. */
+  function kurseLaden() {
+    return P.waehrung.kurseHolen().then(function () {
+      waehrungZeichnen();
+      if (zustand.bericht) { uebersichtZeichnen(); einsatzZeichnen(); }
+    }).catch(function () {
+      waehrungZeichnen();   /* dann eben ohne Umrechnung, aber sichtbar */
+    });
+  }
+
   /* ---------- ABGLEICH: Bericht gegen Anbieter (Karam 19.08.) ----
    * Bis hierher kamen alle Eingangswerte aus dem Bericht. Wer die
    * Gebuehr glaubt, die er pruefen soll, prueft nichts. Ab jetzt
@@ -447,17 +509,40 @@
       }).join('') + '</div>';
 
     /* Der Befehl: was tatsächlich zu tun ist. */
+    /* Jede Seite mit BEIDEN Waehrungen: oben der Betrag in der
+     * Leitwaehrung, in der gerechnet wurde, darunter der Betrag in der
+     * Waehrung des Kontos, auf dem wirklich gesetzt wird. Beide tragen
+     * ihr Zeichen, damit sie nicht zu verwechseln sind. */
+    var W = P.waehrung;
+    var leit = leitWaehrung();
+    var bfw = betfairWaehrung();
+    function seitenBefehl(buchInfo, name, betragLeit, seiteText, qe) {
+      var kw = W.waehrungVon(buchInfo.buchNorm, bfw);
+      var s = W.einsatzSichten(betragLeit, leit, kw.code);
+      var zweiteZeile;
+      if (!kw.code) {
+        zweiteZeile = '<span class="ebkonto offen">Kontowaehrung nicht bestimmt, bitte oben einstellen</span>';
+      } else if (s.gleich) {
+        zweiteZeile = '<span class="ebkonto gleich">Konto fuehrt ebenfalls ' + txt(kw.code) + ', kein Umrechnen noetig</span>';
+      } else if (s.konto.betrag === null) {
+        zweiteZeile = '<span class="ebkonto offen">Konto fuehrt ' + txt(kw.code) + ', aber es fehlt der Wechselkurs</span>';
+      } else {
+        zweiteZeile = '<span class="ebkonto anders">auf dem Konto: <b>' + txt(s.konto.text) + '</b>' +
+          ' <span class="leise">(' + txt(kw.code) + ')</span></span>';
+      }
+      return '<div class="ebseite"><span class="chip ' + (BUCH_KLASSE[buchInfo.buchNorm] || 'xx') + '">' + txt(name) + '</span>' +
+        '<b class="ebbetrag">' + txt(s.leit.text) + '</b>' +
+        zweiteZeile +
+        '<span class="leise klein">' + txt(seiteText || '') + ' · Effektivquote ' + txt(f(qe, 3)) + '</span></div>';
+    }
+
     var befehl =
       '<div class="einsatzbefehl">' +
-        '<div class="ebseite"><span class="chip ' + (BUCH_KLASSE[b1.buchNorm] || 'xx') + '">' + txt(n1) + '</span>' +
-          '<b class="ebbetrag">' + txt(f(r.s1, 2)) + txt(eh) + '</b>' +
-          '<span class="leise klein">' + txt(b1.seiteText || '') + ' · Effektivquote ' + txt(f(e.qe1, 3)) + '</span></div>' +
-        '<div class="ebseite"><span class="chip ' + (BUCH_KLASSE[b2.buchNorm] || 'xx') + '">' + txt(n2) + '</span>' +
-          '<b class="ebbetrag">' + txt(f(r.s2, 2)) + txt(eh) + '</b>' +
-          '<span class="leise klein">' + txt(b2.seiteText || '') + ' · Effektivquote ' + txt(f(e.qe2, 3)) + '</span></div>' +
+        seitenBefehl(b1, n1, r.s1, b1.seiteText, e.qe1) +
+        seitenBefehl(b2, n2, r.s2, b2.seiteText, e.qe2) +
         '<div class="ebseite ' + (r.nochArbitrage ? 'gutfall' : 'schlechtfall') + '">' +
           '<span class="bwname">garantierter Gewinn</span>' +
-          '<b class="ebbetrag">' + (r.garantiert >= 0 ? '+' : '') + txt(f(r.garantiert, 2)) + txt(eh) + '</b>' +
+          '<b class="ebbetrag">' + (r.garantiert >= 0 ? '+' : '') + txt(W.geld(r.garantiert, leit)) + '</b>' +
           '<span class="leise klein">' + txt(f(r.renditeEffektiv, 2)) + ' % · schlechtester Ausgang</span></div>' +
       '</div>';
 
@@ -602,6 +687,7 @@
     el('ergebnis').style.display = '';
     urteilZeichnen(erg, b);
     abgleichZeichnen();
+    waehrungZeichnen();
     uebersichtZeichnen();
     herkunftZeichnen();
     aufteilungZeichnen(b);
@@ -634,9 +720,9 @@
 
     /* Einsatzrechner: rechnet sofort mit, während man tippt, reine
      * Arithmetik auf zwei Zahlen, das kostet nichts. */
-    ['einsatz-betrag', 'einsatz-schritt'].forEach(function (id) {
-      el(id).addEventListener('input', function () { if (zustand.bericht) { einsatzZeichnen(); uebersichtZeichnen(); } });
-      el(id).addEventListener('change', function () { if (zustand.bericht) { einsatzZeichnen(); uebersichtZeichnen(); } });
+    ['einsatz-betrag', 'einsatz-schritt', 'leit-waehrung', 'bf-waehrung'].forEach(function (id) {
+      el(id).addEventListener('input', function () { if (zustand.bericht) { waehrungZeichnen(); einsatzZeichnen(); uebersichtZeichnen(); } });
+      el(id).addEventListener('change', function () { if (zustand.bericht) { waehrungZeichnen(); einsatzZeichnen(); uebersichtZeichnen(); } });
     });
 
     el('aktualitaet-knopf').addEventListener('click', function () {
@@ -697,6 +783,8 @@
     });
 
     if (P.werkstatt) P.werkstatt.verdrahten(function () { return zustand.bericht; });
+    if (P.rechnerflaeche) P.rechnerflaeche.verdrahten();
+    kurseLaden();
     verlaufZeichnen();
   }
 

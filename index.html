@@ -28,8 +28,37 @@
       <h1>Orion Protection Panel</h1>
       <span class="untertitel">Tactical Verification Interface · unabhängige Nachrechnung</span>
     </div>
+    <button type="button" class="knopf klein wrknopf" id="wr-knopf" aria-expanded="false">
+      € ⇄ $  Währungsrechner
+    </button>
     <div class="statuschip"><span class="lampe"></span>System-Status&nbsp;<b>bereit</b></div>
   </header>
+
+  <!-- Der Waehrungsrechner. Klappt unter dem Kopf auf, liegt ueber
+       allem anderen und aendert nichts an einer laufenden Pruefung. -->
+  <div class="wrkasten" id="wr-kasten" style="display:none">
+    <div class="wrzeileEin">
+      <label class="eingabefeld">Betrag
+        <input type="number" id="wr-betrag" value="100" step="10" inputmode="decimal">
+      </label>
+      <label class="eingabefeld">von
+        <select id="wr-von">
+          <option value="EUR" selected>Euro</option>
+          <option value="USD">Dollar</option>
+          <option value="GBP">Pfund</option>
+        </select>
+      </label>
+      <button type="button" class="knopf klein" id="wr-tausch" title="Richtung tauschen">⇄</button>
+      <label class="eingabefeld">in
+        <select id="wr-nach">
+          <option value="USD" selected>Dollar</option>
+          <option value="EUR">Euro</option>
+          <option value="GBP">Pfund</option>
+        </select>
+      </label>
+    </div>
+    <div id="wr-ergebnis" class="wrergebnis"></div>
+  </div>
   <section class="hero">
     <div class="herotext">
       <p class="heroleitsatz">
@@ -49,7 +78,7 @@
       </div>
     </div>
     <div class="herowerte">
-      <div class="hw"><span class="hwname">Prüfungen</span><b class="hwwert">223</b><span class="hwfuss">Selbsttests grün</span></div>
+      <div class="hw"><span class="hwname">Prüfungen</span><b class="hwwert">306</b><span class="hwfuss">Selbsttests grün</span></div>
       <div class="hw"><span class="hwname">Härtetest</span><b class="hwwert">13/13</b><span class="hwfuss">Verfälschungen erkannt</span></div>
       <div class="hw"><span class="hwname">Fehlalarme</span><b class="hwwert">0</b><span class="hwfuss">bei korrektem Bericht</span></div>
     </div>
@@ -82,6 +111,7 @@
     </p>
     <div id="herkunft"></div>
     <div id="abgleich"></div>
+    <div id="waehrung-tafel"></div>
 
     <h2>Übersicht, lohnt es sich?</h2>
     <div id="uebersicht"></div>
@@ -134,6 +164,21 @@
         <label class="eingabefeld">Einsatz gesamt
           <input type="number" id="einsatz-betrag" value="100" min="1" step="10" inputmode="decimal">
         </label>
+        <label class="eingabefeld">Rechnen in
+          <select id="leit-waehrung">
+            <option value="EUR" selected>Euro</option>
+            <option value="USD">Dollar</option>
+            <option value="GBP">Pfund</option>
+          </select>
+        </label>
+        <label class="eingabefeld">Betfair-Konto
+          <select id="bf-waehrung">
+            <option value="">nicht bekannt</option>
+            <option value="EUR">Euro</option>
+            <option value="GBP">Pfund</option>
+            <option value="USD">Dollar</option>
+          </select>
+        </label>
         <label class="eingabefeld">Runden auf
           <select id="einsatz-schritt">
             <option value="0.01">Cent (0,01)</option>
@@ -157,6 +202,81 @@
       </p>
       <button type="button" class="knopf" id="aktualitaet-knopf">Jetzt beim Anbieter nachsehen</button>
       <div id="aktualitaet-ergebnis" style="margin-top:10px"></div>
+    </div>
+
+  </div>
+
+  <h2>Rechner zum Nachrechnen</h2>
+  <p class="leise" style="margin-top:0">
+    Dieselben Rechenarten, die ein grosser Surebet-Dienst anbietet, hier fachlich
+    nachgebaut und einzeln nachvollziehbar. Alles hier ist Werkzeug und beeinflusst
+    <b>kein Urteil</b> und keinen Verlauf. Kombi- und Systemwetten fehlen mit Absicht:
+    die gehören zu Buchmachern, nicht zu Börsen.
+  </p>
+
+  <div class="rechnergitter">
+
+    <div class="karte">
+      <div class="kartentitel">Quotenformate umrechnen</div>
+      <p class="leise klein" style="margin-top:0">Dieselbe Wette, vier Schreibweisen.
+        Ein Buch zeigt +150, das andere 2,50, ein drittes 40 Prozent: alles dasselbe.</p>
+      <div class="knopfzeile">
+        <label class="eingabefeld">Eingabe als
+          <select id="q-art">
+            <option value="dezimal" selected>Dezimalquote</option>
+            <option value="anteil">Anteilspreis</option>
+            <option value="prozent">Wahrscheinlichkeit %</option>
+            <option value="amerikanisch">amerikanisch</option>
+            <option value="bruch">Bruch</option>
+          </select>
+        </label>
+        <label class="eingabefeld">Wert
+          <input type="number" id="q-wert1" value="2.50" step="0.01" inputmode="decimal">
+        </label>
+        <label class="eingabefeld" id="q-zweites" style="display:none">Nenner
+          <input type="number" id="q-wert2" value="2" step="1" inputmode="decimal">
+        </label>
+      </div>
+      <div id="q-ergebnis" class="werkergebnis"></div>
+    </div>
+
+    <div class="karte">
+      <div class="kartentitel">Marge und faire Quoten</div>
+      <p class="leise klein" style="margin-top:0">Wie viel Aufschlag steckt in den Quoten,
+        und wie stünden sie ohne ihn. Liegt die Summe unter 1, ist es Arbitrage.</p>
+      <div class="knopfzeile">
+        <label class="eingabefeld">Quote 1<input type="number" id="m-q1" value="1.90" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Quote 2<input type="number" id="m-q2" value="1.90" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Quote 3<input type="number" id="m-q3" placeholder="frei" step="0.01" inputmode="decimal"></label>
+      </div>
+      <div id="m-ergebnis" class="werkergebnis"></div>
+    </div>
+
+    <div class="karte">
+      <div class="kartentitel">Erwartungswert und Kelly</div>
+      <p class="leise klein" style="margin-top:0">Nur sinnvoll mit einer EIGENEN Einschätzung
+        der Wahrscheinlichkeit. Ohne die ist es Raten mit Formel.</p>
+      <div class="knopfzeile">
+        <label class="eingabefeld">Quote<input type="number" id="v-quote" value="2.50" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Chance %<input type="number" id="v-prozent" value="45" step="1" inputmode="decimal"></label>
+        <label class="eingabefeld">Einsatz<input type="number" id="v-einsatz" value="100" step="10" inputmode="decimal"></label>
+        <label class="eingabefeld">Kapital<input type="number" id="v-kapital" value="1000" step="100" inputmode="decimal"></label>
+      </div>
+      <div id="v-ergebnis" class="werkergebnis"></div>
+    </div>
+
+    <div class="karte">
+      <div class="kartentitel">Dutching, drei und mehr Ausgänge</div>
+      <p class="leise klein" style="margin-top:0">Aufteilung, sodass jeder Ausgang dasselbe
+        auszahlt. Für Heim, Unentschieden, Auswärts, wo zwei Seiten nicht reichen.</p>
+      <div class="knopfzeile">
+        <label class="eingabefeld">Quote 1<input type="number" id="d-q1" value="2.50" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Quote 2<input type="number" id="d-q2" value="3.20" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Quote 3<input type="number" id="d-q3" value="3.60" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Quote 4<input type="number" id="d-q4" placeholder="frei" step="0.01" inputmode="decimal"></label>
+        <label class="eingabefeld">Einsatz<input type="number" id="d-einsatz" value="100" step="10" inputmode="decimal"></label>
+      </div>
+      <div id="d-ergebnis" class="werkergebnis"></div>
     </div>
 
   </div>
@@ -264,10 +384,13 @@
 <script src="js/bewertung.js"></script>
 <script src="js/uebersicht.js"></script>
 <script src="js/paarung.js"></script>
+<script src="js/waehrung.js"></script>
 <script src="js/abgleich.js"></script>
 <script src="js/herkunft.js"></script>
 <script src="js/aktualitaet.js"></script>
 <script src="js/verlauf.js"></script>
+<script src="js/rechner.js"></script>
+<script src="js/rechnerflaeche.js"></script>
 <script src="js/werkstatt.js"></script>
 <script src="js/oberflaeche.js"></script>
 <script src="js/schmuck.js"></script>
