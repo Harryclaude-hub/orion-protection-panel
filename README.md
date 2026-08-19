@@ -47,6 +47,46 @@ und trotzdem keinen Cent bringen. Dann steht dort ausdrücklich
 **„RECHNUNG RICHTIG, ABER KEIN GEWINN"**, während die Rechenprüfung weiter
 „deckt sich" meldet. Beides ist wahr, und beides muss man sehen.
 
+## Was der Pruefstand SELBST holt, statt dem Bericht zu glauben
+
+Karams Einwand vom 19.08.2026 war berechtigt: bis dahin kamen ALLE
+Eingangswerte aus dem Bericht, und nur die Ableitungen wurden selbst
+gerechnet. Wer die Gebuehr glaubt, die er pruefen soll, prueft nichts.
+
+| Angabe | Woher jetzt | Weg |
+|---|---|---|
+| Kurs Polymarket | CLOB-Orderbuch, bester Brief | direkt aus dem Browser |
+| **Gebuehrensatz Polymarket** | feeSchedule.rate des Anbieters | direkt aus dem Browser |
+| **Handelbare Menge** | Menge an derselben Orderbuch-Stufe | direkt aus dem Browser |
+| Mindestbestellung, Tickgroesse | Marktangaben | direkt aus dem Browser |
+| Marktfrage, Anpfiff, Serie | Marktangaben | direkt aus dem Browser |
+| Kurs und Menge Kalshi | trade-api | ueber den eigenen Abruf-Dienst |
+| Partie und Maerkte Smarkets | v3-Schnittstelle | ueber den eigenen Abruf-Dienst |
+| Kurs, Kommission, Menge Betfair | Exchange, nur lesend | ueber die eigene Bruecke am Laptop |
+
+Das Modul `js/abgleich.js` stellt jede dieser Angaben dem Bericht
+gegenueber, mit eigenem Massstab je Art: ein Gebuehrensatz muss praktisch
+exakt stimmen, Mengen duerfen 15 Prozent schwanken, Kurse nur um die
+Druckrundung. Ein falscher Gebuehrensatz zaehlt als harter Befund und
+faerbt die Ampel.
+
+**Die Uebersicht rechnet mit den echten Werten**, sobald der Anbieter
+welche liefert, und schreibt sichtbar dazu, worauf die Prozentzahl steht.
+Der Rechenweg in Abschnitt 3 prueft weiter den Bericht gegen sich selbst.
+Das sind zwei verschiedene Fragen, und beide bekommen ihre Antwort.
+
+### Die zwei Wege, die einmal eingerichtet werden muessen
+
+- **Abruf-Dienst** fuer Kalshi und Smarkets: siehe `supabase/ANLEITUNG.md`,
+  zwei Befehle. Ohne ihn steht dort weiterhin ehrlich "nicht pruefbar".
+- **Eigene Bruecke** fuer Betfair: siehe `bruecke/LIESMICH.md`. Sie liest
+  nur Kurse, setzt nie eine Wette, laeuft nicht im Takt und fasst die
+  Panel-Bruecke nicht an. Ohne sie: "nicht pruefbar" und der Orbit-Link.
+
+Beides ist so gebaut, dass **ohne diese Wege nichts kaputtgeht**: dann
+bleibt es bei der ehrlichen Auskunft, dass diese Seite von hier aus nicht
+pruefbar ist. Kein stiller Ausfall, keine geratene Zahl.
+
 ## Meinen beide Bücher dasselbe Spiel? (Paarungsprüfung)
 
 Die gefährlichste Fehlerklasse ist nicht die Rechnung, sondern die Paarung:
@@ -203,7 +243,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js`, **179 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js`, **198 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde

@@ -1,9 +1,9 @@
-/* ORION PROTECTION PANEL — Schmuck (Design-Schicht, LÖSCHBAR)
+/* ORION PROTECTION PANEL, Schmuck (Design-Schicht, LÖSCHBAR)
  *
  * Einzige Aufgabe: die UTC-Uhr in der HUD-Fußleiste. Fällt diese Datei
- * weg, zeigt das Feld ein ruhiges „—" — es fehlt Schmuck, nie ein Wert
+ * weg, zeigt das Feld ein ruhiges „,", es fehlt Schmuck, nie ein Wert
  * und nie eine Rechnung. Kein Zugriff auf Daten, Rechnung oder Ablage.
- * Takt: 1×/Sekunde ein Textknoten — auf jedem Laptop unmerklich.
+ * Takt: 1×/Sekunde ein Textknoten, auf jedem Laptop unmerklich.
  */
 (function () {
   'use strict';

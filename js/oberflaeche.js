@@ -1,8 +1,7 @@
-/* ORION PROTECTION PANEL — Oberfläche
+/* ORION PROTECTION PANEL, Oberfläche
  *
  * Zeichnet Eingabe, Aufteilung, Rechenweg, Links, Warnzeichen, den
- * Einsatzrechner, die Aktualität und den Verlauf. Rechnet selbst NICHTS —
- * alle Zahlen kommen aus pruefer.js / einsatz.js / aktualitaet.js.
+ * Einsatzrechner, die Aktualität und den Verlauf. Rechnet selbst NICHTS,  * alle Zahlen kommen aus pruefer.js / einsatz.js / aktualitaet.js.
  * Alles Eingefügte wird vor dem Zeichnen entschärft.
  */
 (function (welt) {
@@ -10,8 +9,13 @@
 
   var P = welt.PS;
 
+  /* Der lange Gedankenstrich wird hier abgefangen, auch wenn er aus
+   * dem eingefuegten Bericht stammt: er ist Karams Kontrollsignal.
+   * Ein Komma sagt dasselbe. */
+  var langerStrich = new RegExp(String.fromCharCode(8212), "g");
   function txt(s) {
     return String(s === null || s === undefined ? '' : s)
+      .replace(langerStrich, ',')
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
@@ -27,7 +31,7 @@
 
   var zustand = { bericht: null, ergebnis: null };
 
-  /* Die Paarungsprüfung als eigener Schritt — damit sie NIE von der
+  /* Die Paarungsprüfung als eigener Schritt, damit sie NIE von der
    * Zeichenreihenfolge abhängt. (Genau daran ist es am 18.08. beim
    * ersten Einbau gescheitert: die Übersicht wurde vor der Paarung
    * gezeichnet und meldete orange, obwohl U21 gegen erste Elf lief.) */
@@ -80,7 +84,7 @@
 
     var zeilen = ab.befunde.map(function (x) {
       var marke = x.urteil === "deckt sich" ? "ok" : (x.urteil === "weicht ab" ? "abweichung" : "unpruefbar");
-      function wert(v) { return (v === null || v === undefined) ? "&mdash;" : txt(String(v)); }
+      function wert(v) { return (v === null || v === undefined) ? "nicht genannt" : txt(String(v)); }
       return "<tr class=\"pz-" + (x.urteil === "weicht ab" ? "falsch" : "") + "\">" +
         "<td class=\"hkwas\">Seite " + txt(x.nr) + " " + txt(x.buch) + "</td>" +
         "<td class=\"hkwas\">" + txt(x.art) + "</td>" +
@@ -100,7 +104,7 @@
 
   /* ---------- HERKUNFT + PAARUNG (Karams Vorgabe 18.08.) ----------
    * Über der Übersicht: jede Angabe mit ihrer Quelle, plus der tiefe
-   * Vergleich beider Seiten (Alter, Zeit, Liga) — dieselben drei
+   * Vergleich beider Seiten (Alter, Zeit, Liga), dieselben drei
    * Sperren, die das Panel am 18.08. bekommen hat, hier als eigene
    * zweite Fassung nachgebaut. */
   function herkunftZeichnen() {
@@ -117,7 +121,7 @@
   /* ---------- DIE ÜBERSICHT (Karams Vorgabe 18.08.) ----------
    * Ganz oben: die vier Fragen vor dem Setzen und der Geldfluss in
    * echtem Geld. Gerechnet wird in bewertung.js/einsatz.js, gezeichnet
-   * in uebersicht.js — hier werden die Teile nur zusammengeführt. */
+   * in uebersicht.js, hier werden die Teile nur zusammengeführt. */
   function uebersichtZeichnen() {
     var b = zustand.bericht, erg = zustand.ergebnis;
     if (!b || !erg) return;
@@ -160,8 +164,7 @@
 
     var warn = erg.warnungen.filter(function (w) { return w.stufe === 'warnung'; }).length;
     var harte = erg.warnungen.filter(function (w) { return w.stufe === 'fehler'; }).length;
-    /* Eine nachgewiesene Fehlpaarung wiegt wie ein Rechenfehler —
-     * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
+    /* Eine nachgewiesene Fehlpaarung wiegt wie ein Rechenfehler,      * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
     var paar = paarungRechnen();
     var paarungFalsch = paar && paar.stufe === "falsch";
     /* Ein falscher Gebuehrensatz im Bericht wiegt schwer: er geht in
@@ -295,7 +298,7 @@
    * heller Papierblock mit Zeilen, dunkle Schrift, Formel groß obenauf,
    * darunter die Rechnung Zeile für Zeile, darunter die Bewertung als
    * schmale Zahlenzeile. Der Erklärtext liegt eingeklappt darunter, damit
-   * das Blatt nicht zur Textwand wird — aufklappen, wer es wissen will. */
+   * das Blatt nicht zur Textwand wird, aufklappen, wer es wissen will. */
   function schrittHtml(s) {
     var u = s.urteil || 'unpruefbar';
     var zeilen = (s.zeilen || []).map(function (z) {
@@ -357,14 +360,14 @@
     el('linkpruefung').innerHTML = erg.links.map(function (l) {
       var klasse = l.urteil === 'passt' ? 'gruen' : (l.urteil === 'falsch' ? 'rot' : 'orange');
       var marke = l.urteil === 'passt' ? 'passt' : (l.urteil === 'falsch' ? 'FALSCHER LINK' : 'von außen nicht prüfbar');
-      return '<div class="warnung ' + klasse + '"><b>Seite ' + txt(l.nr) + ' (' + txt(l.buch || '?') + ') — ' +
+      return '<div class="warnung ' + klasse + '"><b>Seite ' + txt(l.nr) + ' (' + txt(l.buch || '?') + '), ' +
         txt(marke) + ':</b> ' + txt(l.text) + '</div>';
     }).join('');
   }
 
   function warnungenZeichnen(erg) {
     if (!erg.warnungen.length) {
-      el('warnungen').innerHTML = '<div class="leise">Keine Warnzeichen, Chef — das Feld ist ruhig.</div>';
+      el('warnungen').innerHTML = '<div class="leise">Keine Warnzeichen, Chef, das Feld ist ruhig.</div>';
       return;
     }
     el('warnungen').innerHTML = erg.warnungen.map(function (w) {
@@ -378,10 +381,10 @@
     var warnAnzahl = erg.warnungen.filter(function (w) { return w.stufe !== 'hinweis'; }).length;
     el('urteil').innerHTML =
       '<div class="urteil ' + klasse + '">' +
-      '<div class="urteiltitel">' + txt(u.stufe === 'ok' ? 'RECHNUNG GEPRÜFT — DECKT SICH' :
-        u.stufe === 'fehler' ? 'RECHNUNG GEPRÜFT — ABWEICHUNG' : 'RECHNUNG GEPRÜFT — TEILWEISE') + '</div>' +
+      '<div class="urteiltitel">' + txt(u.stufe === 'ok' ? 'RECHNUNG GEPRÜFT, DECKT SICH' :
+        u.stufe === 'fehler' ? 'RECHNUNG GEPRÜFT, ABWEICHUNG' : 'RECHNUNG GEPRÜFT, TEILWEISE') + '</div>' +
       '<div>' + txt(u.text) + '</div>' +
-      (warnAnzahl ? '<div class="leise">Dazu ' + warnAnzahl + ' Warnzeichen — siehe unten.</div>' : '') +
+      (warnAnzahl ? '<div class="leise">Dazu ' + warnAnzahl + ' Warnzeichen, siehe unten.</div>' : '') +
       '</div>';
   }
 
@@ -412,19 +415,19 @@
 
     /* Das Rechenblatt: so kommt der Einsatzplan zustande. */
     var blatt = [
-      'Schritt A — ideale Aufteilung (auf gleiche Auszahlung):',
+      'Schritt A, ideale Aufteilung (auf gleiche Auszahlung):',
       '  ' + n1 + ': ' + f(betrag, 2) + ' × (1 ÷ ' + f(e.qe1, 3) + ') ÷ ' + f(r.inv, 4) + ' = ' + f(r.ideal1, 2),
       '  ' + n2 + ': ' + f(betrag, 2) + ' − ' + f(r.ideal1, 2) + ' = ' + f(r.ideal2, 2),
-      'Schritt B — gerundet auf ' + (schritt >= 1 ? f(schritt, 0) : f(schritt, 2)) + ':',
+      'Schritt B, gerundet auf ' + (schritt >= 1 ? f(schritt, 0) : f(schritt, 2)) + ':',
       '  ' + n1 + ': ' + f(r.ideal1, 2) + ' → ' + f(r.s1, 2) + '   ·   ' + n2 + ': ' + f(r.ideal2, 2) + ' → ' + f(r.s2, 2),
       '  wirklich eingesetzt: ' + f(r.s1, 2) + ' + ' + f(r.s2, 2) + ' = ' + f(r.eingesetzt, 2),
-      'Schritt C — was bei welchem Ausgang zurückkommt:',
+      'Schritt C, was bei welchem Ausgang zurückkommt:',
       '  Ausgang ' + n1 + ': ' + f(r.s1, 2) + ' × ' + f(e.qe1, 3) + ' = ' + f(r.auszahlung1, 2) + '   → Gewinn ' + f(r.gewinn1, 2),
       '  Ausgang ' + n2 + ': ' + f(r.s2, 2) + ' × ' + f(e.qe2, 3) + ' = ' + f(r.auszahlung2, 2) + '   → Gewinn ' + f(r.gewinn2, 2),
-      'Schritt D — garantiert ist der SCHLECHTERE der beiden:',
+      'Schritt D, garantiert ist der SCHLECHTERE der beiden:',
       '  min(' + f(r.gewinn1, 2) + ' · ' + f(r.gewinn2, 2) + ') = ' + f(r.garantiert, 2) +
         '   das sind ' + f(r.renditeEffektiv, 2) + ' % vom eingesetzten Geld',
-      '  ohne Rundung wären es ' + f(r.idealRendite, 2) + ' % — die Rundung kostet ' + f(r.rundungsverlust, 2) + ' Punkte'
+      '  ohne Rundung wären es ' + f(r.idealRendite, 2) + ' %, die Rundung kostet ' + f(r.rundungsverlust, 2) + ' Punkte'
     ];
 
     var zettel = '<div class="blatt">' +
@@ -449,7 +452,7 @@
           '<span class="leise klein">' + txt(f(r.renditeEffektiv, 2)) + ' % · schlechtester Ausgang</span></div>' +
       '</div>';
 
-    /* Kennzahlen, wie sie ein Scanner zeigt — hier alle selbst gerechnet. */
+    /* Kennzahlen, wie sie ein Scanner zeigt, hier alle selbst gerechnet. */
     var kennzahlen = '<div class="bewertung">' +
       '<span class="bwfeld"><span class="bwname">Marge des Marktes</span><b class="mono">' + txt(f(mg, 2)) + ' %</b></span>' +
       '<span class="bwfeld"><span class="bwname">Wahrscheinlichkeit ' + txt(n1) + '</span><b class="mono">' + txt(f(E.wahrscheinlichkeit(e.qe1), 1)) + ' %</b></span>' +
@@ -460,18 +463,18 @@
     var hinweise = [];
     if (!r.nochArbitrage) {
       hinweise.push('<div class="warnung fehler">Nach der Rundung bleibt KEIN sicherer Gewinn mehr übrig ' +
-        '(' + f(r.garantiert, 2) + '). Kleiner runden oder mehr einsetzen — oder die Finger davon lassen.</div>');
+        '(' + f(r.garantiert, 2) + '). Kleiner runden oder mehr einsetzen, oder die Finger davon lassen.</div>');
     }
     if (r.unterschiedDerAusgaenge > 0.005) {
       hinweise.push('<div class="warnung hinweis">Durch die Rundung zahlen die beiden Ausgänge unterschiedlich aus ' +
-        '(' + f(r.gewinn1, 2) + ' gegen ' + f(r.gewinn2, 2) + '). Verlass dich auf den kleineren Wert — der andere ist Zufall.</div>');
+        '(' + f(r.gewinn1, 2) + ' gegen ' + f(r.gewinn2, 2) + '). Verlass dich auf den kleineren Wert, der andere ist Zufall.</div>');
     }
     if (r.ueberMax === true) {
       hinweise.push('<div class="warnung warnung">Der Einsatz ' + f(r.eingesetzt, 2) + ' liegt ÜBER dem, was die dünnere Seite ' +
         'laut Bericht aufnimmt (' + f(r.maxEinsatz, 2) + '). Darüber bekommst du nicht mehr diese Kurse.</div>');
     }
     if (r.maxEinsatz === null) {
-      hinweise.push('<div class="warnung hinweis">Der Bericht nennt keinen Höchsteinsatz — ob die Bücher diesen Betrag ' +
+      hinweise.push('<div class="warnung hinweis">Der Bericht nennt keinen Höchsteinsatz, ob die Bücher diesen Betrag ' +
         'aufnehmen, ist damit NICHT geprüft. Unbekannt heißt nicht unbegrenzt.</div>');
     }
     if (pf && pf.spielraumProzent < 1) {
@@ -482,7 +485,7 @@
     el('einsatz-ergebnis').innerHTML = befehl + zettel + kennzahlen + hinweise.join('') +
       '<details class="erklaerung"><summary>Was bedeutet dieser Abschnitt?</summary>' +
       '<p>Der Panel-Bericht rechnet immer mit 100 als Grundeinsatz und tut so, als könnte man ' +
-      'Beträge wie 49,71 setzen. In Wirklichkeit rundet man — und ab da zahlen die beiden Ausgänge ' +
+      'Beträge wie 49,71 setzen. In Wirklichkeit rundet man, und ab da zahlen die beiden Ausgänge ' +
       'nicht mehr gleich aus. Deshalb steht hier der garantierte Gewinn: der schlechtere der beiden. ' +
       'Die Marge des Marktes ist, wie viel Prozent die Kehrwertsumme unter 100 liegt. Der Kurspuffer ' +
       'sagt, wie weit sich Seite 1 bewegen darf, bevor der Vorteil weg ist.</p></details>';
@@ -500,12 +503,11 @@
         var alt = seite.wert, neu = s.wert;
         var gleich = Math.abs(neu - alt) < (seite.art === 'preis' ? 0.0005 : 0.005);
         inhalt = 'Aktueller Wert: <b class="mono">' + txt(f(neu, seite.art === 'preis' ? 3 : 2)) + '</b>' +
-          ' <span class="leise">(Bericht: ' + txt(f(alt, seite.art === 'preis' ? 3 : 2)) + ')</span> — ' +
+          ' <span class="leise">(Bericht: ' + txt(f(alt, seite.art === 'preis' ? 3 : 2)) + ')</span>, ' +
           (gleich ? '<span class="gruen">unverändert</span>' : '<span class="orange">hat sich bewegt</span>') +
           (s.quelle ? '<div class="leise klein">Quelle: ' + txt(s.quelle) + '</div>' : '');
         if (s.frage) {
-          /* Der Anbieter nennt die Frage des Marktes, den der Link öffnet —
-           * der direkteste Beleg, ob der Link zur Partie führt. */
+          /* Der Anbieter nennt die Frage des Marktes, den der Link öffnet,            * der direkteste Beleg, ob der Link zur Partie führt. */
           inhalt += '<div class="klein">Der Link öffnet: „' + txt(s.frage) + '"' +
             (b.titel ? ' <span class="leise">(Bericht: „' + txt(b.titel) + '")</span>' : '') + '</div>';
         }
@@ -519,18 +521,18 @@
       var n = a.neu;
       teile.push(
         '<div class="karte"><div class="kartentitel">Der Eintrag mit den AKTUELLEN Zahlen</div>' +
-        '<div class="mono klein leise">Seite 1: ' + txt(f(n.wert1, 4)) + (n.frisch1 ? ' (frisch)' : ' (aus dem Bericht — nicht prüfbar)') +
-        ' · Seite 2: ' + txt(f(n.wert2, 4)) + (n.frisch2 ? ' (frisch)' : ' (aus dem Bericht — nicht prüfbar)') + '</div>' +
+        '<div class="mono klein leise">Seite 1: ' + txt(f(n.wert1, 4)) + (n.frisch1 ? ' (frisch)' : ' (aus dem Bericht, nicht prüfbar)') +
+        ' · Seite 2: ' + txt(f(n.wert2, 4)) + (n.frisch2 ? ' (frisch)' : ' (aus dem Bericht, nicht prüfbar)') + '</div>' +
         '<div class="feld"><span class="feldname">Kehrwertsumme jetzt</span><span class="feldwert mono">' + txt(f(n.inv, 4)) + '</span></div>' +
         '<div class="feld"><span class="feldname">Rendite jetzt</span><span class="feldwert mono"><b>' + (n.rendite >= 0 ? '+' : '') + txt(f(n.rendite, 2)) + ' %</b></span></div>' +
         '<div class="feld"><span class="feldname">Aufteilung bei 100</span><span class="feldwert mono">' + txt(f(n.s1, 2)) + ' / ' + txt(f(n.s2, 2)) + '</span></div>' +
         '<div class="feld"><span class="feldname">Urteil</span><span class="feldwert">' +
         (n.istArbitrage ? '<span class="gruen">Chance besteht mit den aktuellen Zahlen weiter</span>'
           : '<span class="rot">Mit den aktuellen Zahlen KEINE Arbitrage mehr</span>') +
-        ((n.frisch1 && n.frisch2) ? '' : ' <span class="leise">(eine Seite war nicht prüfbar — halbes Urteil)</span>') +
+        ((n.frisch1 && n.frisch2) ? '' : ' <span class="leise">(eine Seite war nicht prüfbar, halbes Urteil)</span>') +
         '</span></div></div>');
     } else {
-      teile.push('<div class="leise">Keine Seite war frisch prüfbar — es bleibt beim Bericht. Links öffnen und von Hand vergleichen.</div>');
+      teile.push('<div class="leise">Keine Seite war frisch prüfbar, es bleibt beim Bericht. Links öffnen und von Hand vergleichen.</div>');
     }
     el('aktualitaet-ergebnis').innerHTML = teile.join('');
   }
@@ -540,11 +542,11 @@
     var V = P.verlauf;
     var status = el('konto-status');
     if (V.angemeldet()) {
-      status.innerHTML = 'Jawohl, Chef — angemeldet als <b>' + txt(V.eigeneMail() || '?') + '</b>. Prüfungen landen im Konto, auf jedem Gerät abrufbar.';
+      status.innerHTML = 'Jawohl, Chef, angemeldet als <b>' + txt(V.eigeneMail() || '?') + '</b>. Prüfungen landen im Konto, auf jedem Gerät abrufbar.';
       el('konto-formular').style.display = 'none';
       el('abmelden').style.display = '';
     } else {
-      status.innerHTML = 'Nicht angemeldet — Prüfungen bleiben nur auf DIESEM Gerät. Mit E-Mail und Passwort anmelden, dann sind sie überall abrufbar.';
+      status.innerHTML = 'Nicht angemeldet, Prüfungen bleiben nur auf DIESEM Gerät. Mit E-Mail und Passwort anmelden, dann sind sie überall abrufbar.';
       el('konto-formular').style.display = '';
       el('abmelden').style.display = 'none';
     }
@@ -581,9 +583,9 @@
     if (!b.erkannt) {
       el('eingabe-hinweis').textContent = 'Chef, das sieht nicht nach einem Orion-Prüfbericht aus (Kopf oder „SEITE 1" fehlen). Geprüft wird trotzdem, was erkennbar ist.';
     } else if (b.fehlend.length) {
-      el('eingabe-hinweis').textContent = 'Verstanden, Chef — erkannt, aber ohne: ' + b.fehlend.join(', ') + '.';
+      el('eingabe-hinweis').textContent = 'Verstanden, Chef, erkannt, aber ohne: ' + b.fehlend.join(', ') + '.';
     } else {
-      el('eingabe-hinweis').textContent = 'Jawohl, Chef — Bericht erkannt und vollständig zerlegt.';
+      el('eingabe-hinweis').textContent = 'Jawohl, Chef, Bericht erkannt und vollständig zerlegt.';
     }
     var erg = P.pruefer.pruefen(b);
     zustand.bericht = b; zustand.ergebnis = erg;
@@ -602,8 +604,8 @@
     aktualitaetHolen();
 
     P.verlauf.speichern(b, erg).then(function (wo) {
-      el('speicher-hinweis').textContent = wo.wo === 'konto' ? 'Jawohl, Chef — im Konto abgelegt.'
-        : wo.wo === 'lokal' ? 'Jawohl, Chef — auf diesem Gerät abgelegt (ohne Anmeldung nur hier sichtbar).'
+      el('speicher-hinweis').textContent = wo.wo === 'konto' ? 'Jawohl, Chef, im Konto abgelegt.'
+        : wo.wo === 'lokal' ? 'Jawohl, Chef, auf diesem Gerät abgelegt (ohne Anmeldung nur hier sichtbar).'
         : 'Chef, Speichern ging nicht (Browser-Speicher gesperrt).';
       verlaufZeichnen();
     }).catch(function (fehler) {
@@ -617,11 +619,11 @@
       el('eingabe').value = ''; el('eingabe-hinweis').textContent = ''; el('ergebnis').style.display = 'none';
     });
     el('eingabe').addEventListener('paste', function () {
-      /* Nach dem Einfügen direkt prüfen — ein Handgriff statt zwei. */
+      /* Nach dem Einfügen direkt prüfen, ein Handgriff statt zwei. */
       setTimeout(pruefen, 60);
     });
 
-    /* Einsatzrechner: rechnet sofort mit, während man tippt — reine
+    /* Einsatzrechner: rechnet sofort mit, während man tippt, reine
      * Arithmetik auf zwei Zahlen, das kostet nichts. */
     ['einsatz-betrag', 'einsatz-schritt'].forEach(function (id) {
       el(id).addEventListener('input', function () { if (zustand.bericht) { einsatzZeichnen(); uebersichtZeichnen(); } });
@@ -660,7 +662,7 @@
     });
 
     /* Verlauf: EIN Zuhörer am Dokument (die Liste wird neu gezeichnet;
-     * Einzel-Zuhörer wären nach dem nächsten Zeichnen weg — Panel-Lehre). */
+     * Einzel-Zuhörer wären nach dem nächsten Zeichnen weg, Panel-Lehre). */
     document.addEventListener('click', function (ev) {
       var laden = ev.target.closest ? ev.target.closest('.verlauf-laden') : null;
       if (laden) {

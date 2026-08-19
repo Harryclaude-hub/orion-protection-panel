@@ -1,6 +1,6 @@
-/* ORION PROTECTION PANEL — Bewertung
+/* ORION PROTECTION PANEL, Bewertung
  *
- * Zwei Fragen, die NICHT dasselbe sind — und deren Vermischung der
+ * Zwei Fragen, die NICHT dasselbe sind, und deren Vermischung der
  * gefährlichste Fehler wäre:
  *
  *   1. STIMMT DIE RECHNUNG?   (macht das Panel Rechenfehler?)
@@ -14,7 +14,7 @@
  *   GRÜN    Rechnung stimmt UND es bleibt spürbar Gewinn (>= 1 %)
  *   ORANGE  knapp: Gewinn unter 1 %, oder Warnzeichen, oder Teile der
  *           Rechnung waren nicht prüfbar
- *   ROT     entweder ein Rechenfehler/falscher Link — ODER die Rechnung
+ *   ROT     entweder ein Rechenfehler/falscher Link, ODER die Rechnung
  *           stimmt, aber es bleibt KEIN Gewinn übrig
  *
  * Die 1-%-Grenze ist keine Willkür: aus den Panel-Messungen vom 13.08.
@@ -22,7 +22,7 @@
  * darunter liegt, wird von Rundung, einer kleinen Kursbewegung oder einem
  * abweichenden Gebührentarif regelmäßig aufgefressen.
  *
- * Reine Mathematik und Entscheidungslogik — kein DOM, im Node-Prüfstand
+ * Reine Mathematik und Entscheidungslogik, kein DOM, im Node-Prüfstand
  * testbar.
  */
 (function (welt) {
@@ -86,7 +86,7 @@
       besterAusgang: besser,
       garantierterGewinn: schlechter.gewinn,
       garantierteRendite: gesamt > 0 ? schlechter.gewinn / gesamt * 100 : null,
-      /* Was in JEDEM Fall an die Bücher geht — die Gebühr des Ausgangs,
+      /* Was in JEDEM Fall an die Bücher geht, die Gebühr des Ausgangs,
        * der eintritt. Da immer genau einer eintritt, liegt die Gebühr
        * zwischen diesen beiden Werten. */
       gebuehrMin: Math.min(a.gebuehrGeld, b.gebuehrGeld),
@@ -106,19 +106,19 @@
     var rechnungAntwort = rechnungOk ? 'geprüft, deckt sich'
       : (rechnungKaputt ? 'weicht ab' : 'teilweise prüfbar');
 
-    /* 0) Die Paarung zuerst — und mit EIGENER Begründung. Eine falsche
+    /* 0) Die Paarung zuerst, und mit EIGENER Begründung. Eine falsche
      *    Paarung macht die Rechnung nicht falsch; sie macht die ganze
      *    Absicherung wertlos, weil zwei verschiedene Spiele gewettet
      *    werden. Das muss dastehen, nicht „Rechenfehler". */
     if (opt.paarungStufe === 'falsch') {
       return {
         stufe: 'rot',
-        kopf: 'NICHT SETZEN — ZWEI VERSCHIEDENE SPIELE',
+        kopf: 'NICHT SETZEN, ZWEI VERSCHIEDENE SPIELE',
         satz: 'Die Rechnung ist in Ordnung, aber die beiden Bücher meinen nicht dieselbe Partie ' +
               '(unterschiedliche Altersklasse, Anpfiffzeit oder Liga). Dann ist es keine ' +
               'Absicherung, sondern zwei offene Wetten. Die Einzelheiten stehen in der ' +
               'Herkunftstabelle darüber.',
-        gewinnfrage: 'NEIN — es ist keine Absicherung',
+        gewinnfrage: 'NEIN, es ist keine Absicherung',
         rechnungfrage: rechnungAntwort
       };
     }
@@ -127,7 +127,7 @@
     if (rechnungKaputt) {
       return {
         stufe: 'rot',
-        kopf: 'NICHT SETZEN — die Rechnung stimmt nicht',
+        kopf: 'NICHT SETZEN, die Rechnung stimmt nicht',
         satz: 'In der Rechnung des Berichts steckt mindestens ein Fehler. Solange der nicht ' +
               'geklärt ist, sagt die Rendite gar nichts aus.',
         gewinnfrage: 'unklar, weil die Rechnung nicht stimmt',
@@ -135,11 +135,11 @@
       };
     }
 
-    /* 2) Rechnung stimmt — jetzt die zweite, davon unabhängige Frage. */
+    /* 2) Rechnung stimmt, jetzt die zweite, davon unabhängige Frage. */
     if (!istZahl(r)) {
       return {
         stufe: 'orange',
-        kopf: 'UNKLAR — Gewinn nicht berechenbar',
+        kopf: 'UNKLAR, Gewinn nicht berechenbar',
         satz: 'Die Rechnung des Berichts ist in Ordnung, aber es fehlen Angaben, um den ' +
               'tatsächlichen Gewinn zu bestimmen.',
         gewinnfrage: 'nicht berechenbar',
@@ -150,17 +150,17 @@
     if (r <= 0) {
       return {
         stufe: 'rot',
-        kopf: 'RECHNUNG RICHTIG — ABER KEIN GEWINN',
+        kopf: 'RECHNUNG RICHTIG, ABER KEIN GEWINN',
         satz: 'Der Bericht hat sauber gerechnet. Trotzdem bleibt nach allen Gebühren nichts ' +
               'übrig (' + r.toFixed(2) + ' %). Das ist keine Arbitrage, sondern eine Wette. ' +
               'Nicht setzen.',
-        gewinnfrage: 'NEIN — ' + r.toFixed(2) + ' %',
+        gewinnfrage: 'NEIN, ' + r.toFixed(2) + ' %',
         rechnungfrage: rechnungOk ? 'geprüft, deckt sich' : 'teilweise prüfbar'
       };
     }
 
     if (r < GRENZE_LOHNT) {
-      gruende.push('Gewinn unter ' + GRENZE_LOHNT.toFixed(1) + ' % — Rundung, eine kleine ' +
+      gruende.push('Gewinn unter ' + GRENZE_LOHNT.toFixed(1) + ' %, Rundung, eine kleine ' +
                    'Kursbewegung oder ein anderer Gebührentarif fressen das leicht auf');
     }
     if (opt.warnungen > 0) {
@@ -170,17 +170,17 @@
       gruende.push('Teile der Rechnung waren mangels Angaben nicht prüfbar');
     }
     if (opt.paarungStufe === 'unbekannt') {
-      gruende.push('nicht alle Merkmale der Partie waren vergleichbar — vor dem Setzen ' +
+      gruende.push('nicht alle Merkmale der Partie waren vergleichbar, vor dem Setzen ' +
                    'beide Links öffnen und Partie, Anpfiff und Liga selbst vergleichen');
     }
 
     if (gruende.length) {
       return {
         stufe: 'orange',
-        kopf: 'KNAPP — mit Vorsicht',
+        kopf: 'KNAPP, mit Vorsicht',
         satz: 'Es bleibt Gewinn übrig (' + r.toFixed(2) + ' %), aber die Lage ist dünn: ' +
               gruende.join(' · ') + '.',
-        gewinnfrage: 'ja, knapp — ' + r.toFixed(2) + ' %',
+        gewinnfrage: 'ja, knapp, ' + r.toFixed(2) + ' %',
         rechnungfrage: rechnungOk ? 'geprüft, deckt sich' : 'teilweise prüfbar',
         gruende: gruende
       };
@@ -188,10 +188,10 @@
 
     return {
       stufe: 'gruen',
-      kopf: 'LOHNT SICH — echte Arbitrage',
+      kopf: 'LOHNT SICH, echte Arbitrage',
       satz: 'Die Rechnung deckt sich mit der eigenen Nachrechnung, und nach allen Gebühren ' +
-            'bleiben ' + r.toFixed(2) + ' % sicherer Gewinn — unabhängig vom Ausgang.',
-      gewinnfrage: 'JA — ' + r.toFixed(2) + ' %',
+            'bleiben ' + r.toFixed(2) + ' % sicherer Gewinn, unabhängig vom Ausgang.',
+      gewinnfrage: 'JA, ' + r.toFixed(2) + ' %',
       rechnungfrage: 'geprüft, deckt sich'
     };
   }

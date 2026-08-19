@@ -1,7 +1,7 @@
-/* ORION PROTECTION PANEL — Herkunft und Paarung
+/* ORION PROTECTION PANEL, Herkunft und Paarung
  *
  * Karams Vorgabe (18.08.): eine Komplettanzeige ÜBER der Übersicht, in
- * der jede Angabe zeigt, WOHER sie stammt — mit Link zur Quelle, damit
+ * der jede Angabe zeigt, WOHER sie stammt, mit Link zur Quelle, damit
  * man jeden Wert selbst nachsehen kann.
  *
  * Drei Herkünfte, immer unterscheidbar:
@@ -17,15 +17,20 @@
 (function (welt) {
   'use strict';
 
+  /* Der lange Gedankenstrich wird hier abgefangen, auch wenn er aus
+   * dem eingefuegten Bericht stammt: er ist Karams Kontrollsignal.
+   * Ein Komma sagt dasselbe. */
+  var langerStrich = new RegExp(String.fromCharCode(8212), "g");
   function txt(s) {
     return String(s === null || s === undefined ? '' : s)
+      .replace(langerStrich, ',')
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function zeitText(iso) {
     var t = Date.parse(String(iso || ''));
-    if (!isFinite(t)) return String(iso || '—');
+    if (!isFinite(t)) return String(iso || 'nicht genannt');
     var d = new Date(t);
     function zwei(n) { return (n < 10 ? '0' : '') + n; }
     return zwei(d.getDate()) + '.' + zwei(d.getMonth() + 1) + '. ' + zwei(d.getHours()) + ':' + zwei(d.getMinutes());
@@ -54,7 +59,7 @@
     if (!paarung) return '';
     var kopf = {
       passt: { klasse: 'gruen', text: 'Beide Seiten meinen dieselbe Partie, soweit prüfbar.' },
-      unbekannt: { klasse: 'orange', text: 'Teilweise nicht prüfbar — offene Punkte unten. Vor dem Setzen beide Links öffnen und vergleichen.' },
+      unbekannt: { klasse: 'orange', text: 'Teilweise nicht prüfbar, offene Punkte unten. Vor dem Setzen beide Links öffnen und vergleichen.' },
       falsch: { klasse: 'rot', text: 'ACHTUNG: mindestens ein Merkmal passt NICHT zusammen. Sehr wahrscheinlich zwei verschiedene Spiele.' }
     }[paarung.stufe] || { klasse: 'orange', text: '' };
 
@@ -62,8 +67,8 @@
       var marke = b.urteil === 'passt' ? 'passt' : (b.urteil === 'falsch' ? 'PASST NICHT' : 'nicht prüfbar');
       return '<tr class="pz-' + b.urteil + '">' +
         '<td class="hkwas">' + txt(b.art) + '</td>' +
-        '<td class="mono klein">' + txt(b.wert1 || '—') + '</td>' +
-        '<td class="mono klein">' + txt(b.wert2 || '—') + '</td>' +
+        '<td class="mono klein">' + txt(b.wert1 || 'nicht genannt') + '</td>' +
+        '<td class="mono klein">' + txt(b.wert2 || 'nicht genannt') + '</td>' +
         '<td><span class="marke ' + (b.urteil === 'passt' ? 'ok' : (b.urteil === 'falsch' ? 'abweichung' : 'unpruefbar')) + '">' +
           txt(marke) + '</span><div class="leise klein">' + txt(b.text) + '</div></td>' +
         '</tr>';
@@ -88,7 +93,7 @@
     var zeilen = [];
 
     /* Was das Spiel überhaupt ist. */
-    zeilen.push(zeile('Spiel / Frage laut Panel', b.titel || '—', 'bericht', null));
+    zeilen.push(zeile('Spiel / Frage laut Panel', b.titel || 'nicht genannt', 'bericht', null));
     if (a1 && a1.frage) {
       zeilen.push(zeile('Marktfrage bei ' + namen[0], a1.frage, 'anbieter', a1.quellLink || s1.link,
         'So heißt der Markt, den der Link von Seite 1 wirklich öffnet.'));
@@ -102,11 +107,11 @@
     }
 
     /* Zeiten. */
-    zeilen.push(zeile('Anpfiff laut Panel', b.zeiten && b.zeiten.anpfiff ? b.zeiten.anpfiff : '—',
+    zeilen.push(zeile('Anpfiff laut Panel', b.zeiten && b.zeiten.anpfiff ? b.zeiten.anpfiff : ',',
       b.zeiten && b.zeiten.anpfiff ? 'bericht' : 'fehlt', null));
     if (a1 && a1.anpfiff) {
       zeilen.push(zeile('Anpfiff laut ' + namen[0], zeitText(a1.anpfiff), 'anbieter', a1.quellLink || s1.link,
-        'Direkt vom Anbieter — der schärfste Beleg dafür, welches Spiel gemeint ist.'));
+        'Direkt vom Anbieter, der schärfste Beleg dafür, welches Spiel gemeint ist.'));
     }
     if (a2 && a2.anpfiff) {
       zeilen.push(zeile('Anpfiff laut ' + namen[1], zeitText(a2.anpfiff), 'anbieter', a2.quellLink || s2.link, null));
@@ -118,30 +123,30 @@
     var art1 = s1.art === 'preis' ? 'Anteilspreis' : 'Quote';
     var art2 = s2.art === 'preis' ? 'Anteilspreis' : 'Quote';
     zeilen.push(zeile(art1 + ' ' + namen[0] + ' (' + (s1.seiteText || '?') + ')',
-      s1.wert !== undefined && s1.wert !== null ? String(s1.wert) : '—', 'bericht', s1.link));
+      s1.wert !== undefined && s1.wert !== null ? String(s1.wert) : ',', 'bericht', s1.link));
     if (a1 && a1.status === 'ok') {
       var b1 = Math.abs(a1.wert - s1.wert) >= (s1.art === 'preis' ? 0.0005 : 0.005);
       zeilen.push(zeile('… jetzt beim Anbieter', String(a1.wert), 'anbieter', a1.quellLink || s1.link,
-        b1 ? 'WEICHT AB vom Bericht — mit dieser Zahl neu rechnen.' : 'unverändert gegenüber dem Bericht.'));
+        b1 ? 'WEICHT AB vom Bericht, mit dieser Zahl neu rechnen.' : 'unverändert gegenüber dem Bericht.'));
     }
     zeilen.push(zeile(art2 + ' ' + namen[1] + ' (' + (s2.seiteText || '?') + ')',
-      s2.wert !== undefined && s2.wert !== null ? String(s2.wert) : '—', 'bericht', s2.link));
+      s2.wert !== undefined && s2.wert !== null ? String(s2.wert) : ',', 'bericht', s2.link));
     if (a2 && a2.status === 'ok') {
       var b2 = Math.abs(a2.wert - s2.wert) >= (s2.art === 'preis' ? 0.0005 : 0.005);
       zeilen.push(zeile('… jetzt beim Anbieter', String(a2.wert), 'anbieter', a2.quellLink || s2.link,
-        b2 ? 'WEICHT AB vom Bericht — mit dieser Zahl neu rechnen.' : 'unverändert gegenüber dem Bericht.'));
+        b2 ? 'WEICHT AB vom Bericht, mit dieser Zahl neu rechnen.' : 'unverändert gegenüber dem Bericht.'));
     }
 
     /* Gebühren und die daraus gerechneten Größen. */
     zeilen.push(zeile('Gebührensatz ' + namen[0],
-      s1.gebuehr !== null && s1.gebuehr !== undefined ? (s1.gebuehr * 100).toFixed(1) + ' %' : '—',
+      s1.gebuehr !== null && s1.gebuehr !== undefined ? (s1.gebuehr * 100).toFixed(1) + ' %' : ',',
       'bericht', null, s1.gebuehrEcht === false ? 'Standardtarif, NICHT am Konto gemessen.' : null));
     zeilen.push(zeile('Gebührensatz ' + namen[1],
-      s2.gebuehr !== null && s2.gebuehr !== undefined ? (s2.gebuehr * 100).toFixed(1) + ' %' : '—',
+      s2.gebuehr !== null && s2.gebuehr !== undefined ? (s2.gebuehr * 100).toFixed(1) + ' %' : ',',
       'bericht', null, s2.gebuehrEcht === false ? 'Standardtarif, NICHT am Konto gemessen.' : null));
     if (opt.ergebnis && isFinite(opt.ergebnis.qe1)) {
       zeilen.push(zeile('Effektivquote ' + namen[0], opt.ergebnis.qe1.toFixed(4), 'gerechnet', null,
-        'Aus Kurs und Gebühr — Rechenweg in Abschnitt 3.'));
+        'Aus Kurs und Gebühr, Rechenweg in Abschnitt 3.'));
     }
     if (opt.ergebnis && isFinite(opt.ergebnis.qe2)) {
       zeilen.push(zeile('Effektivquote ' + namen[1], opt.ergebnis.qe2.toFixed(4), 'gerechnet', null, null));
@@ -158,7 +163,7 @@
         '<tbody>' + zeilen.join('') + '</tbody></table></div>' +
       (nichtGeprueft.length
         ? '<div class="warnung orange">Von hier aus nicht direkt prüfbar: <b>' + txt(nichtGeprueft.join(' und ')) +
-          '</b>. Diese Seite bitte im geöffneten Fenster selbst vergleichen — Adresse, Partie, Anpfiff und Kurs.</div>'
+          '</b>. Diese Seite bitte im geöffneten Fenster selbst vergleichen, Adresse, Partie, Anpfiff und Kurs.</div>'
         : '') +
       paarungBlock(opt.paarung, namen) +
       '</div>';

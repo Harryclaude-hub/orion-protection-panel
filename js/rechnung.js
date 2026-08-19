@@ -1,8 +1,8 @@
-/* ORION PRÜFSTAND — Rechnung (eigenständige Zweitfassung)
+/* ORION PRÜFSTAND, Rechnung (eigenständige Zweitfassung)
  *
  * Dieses Modul ist ABSICHTLICH eine unabhängige zweite Umsetzung der
  * Orion-Panel-Rechenwege. Es teilt keinen Code mit dem Panel und liest
- * keine Panel-Daten — genau dadurch taugt es als Kontrolle: rechnen zwei
+ * keine Panel-Daten, genau dadurch taugt es als Kontrolle: rechnen zwei
  * getrennte Fassungen dasselbe, ist die Rechnung belastbar; rechnen sie
  * verschieden, ist etwas faul.
  *
@@ -18,7 +18,7 @@
  *   Auszahlung     S/inv (bei BEIDEN Ausgängen gleich)
  *   Rendite        (1/inv − 1) · 100 %
  *
- * Dazu die ALTE Polymarket-Formel Satz · min(p, 1−p) — nur zum ERKENNEN:
+ * Dazu die ALTE Polymarket-Formel Satz · min(p, 1−p), nur zum ERKENNEN:
  * zeigt ein Bericht eine Effektivquote, die zur alten Formel passt, sagt
  * der Prüfstand das ausdrücklich, statt nur "weicht ab" zu melden.
  */
@@ -69,7 +69,7 @@
 
   /* Eine Seite des Berichts in eine Effektivquote übersetzen.
    * art: 'preis' | 'quote' ; seiteText entscheidet Back/Lay.
-   * Liefert { qe, qeAlt, form } — qeAlt nur bei Preis-Büchern. */
+   * Liefert { qe, qeAlt, form }, qeAlt nur bei Preis-Büchern. */
   function qeSeite(art, seiteText, wert, satz) {
     if (art === 'preis') {
       return { qe: qeAnteil(wert, satz), qeAlt: qeAnteilAlt(wert, satz), form: 'anteil' };

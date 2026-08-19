@@ -1,4 +1,4 @@
-/* ORION PROTECTION PANEL — Stil (Design-Schicht, LÖSCHBAR)
+/* ORION PROTECTION PANEL, Stil (Design-Schicht, LÖSCHBAR)
  *
  * Taktisches Kommando-Interface nach Karams Referenzbild vom 17.08.2026:
  * tiefes Navy, Cyan-Akzente, schmale GROSSBUCHSTABEN-Beschriftungen mit
@@ -6,12 +6,12 @@
  *
  * EISERNE REGEL (Karams Anweisung, im Wissen hinterlegt): Diese Datei
  * berührt KEINE Funktion, KEIN Tempo, KEINE Struktur. Alle Farben sind
- * Tokens ganz oben — ein Thema-Wechsel tauscht NUR diese Tokens. Effekte
+ * Tokens ganz oben, ein Thema-Wechsel tauscht NUR diese Tokens. Effekte
  * sind reine CSS-Arbeit, sparsam, mit Rücksicht auf reduced-motion; die
  * Seite bleibt auf einem normalen Laptop flüssig.
  */
 :root {
-  /* Grundton — Navy-Tiefe wie im Referenzbild */
+  /* Grundton, Navy-Tiefe wie im Referenzbild */
   --grund:      #070D18;
   --grund-tief: #04121F;
   --karte:      #0D1726;
@@ -20,7 +20,7 @@
   --text:       #E7F1FB;
   --leise:      #89A2BC;
 
-  /* Signal — Cyan führt */
+  /* Signal, Cyan führt */
   --signal:     #3CC9F5;
   --signal-tief:#1B7FA6;
   --gold:       #E3A94A;
@@ -35,9 +35,9 @@
   --bf: #E8C15A;
   --xx: #89A2BC;
 
-  /* Rechenblatt — Papier wie eine Buchseite (Karam 18.08.):
+  /* Rechenblatt, Papier wie eine Buchseite (Karam 18.08.):
    * cremig statt neonweiß, Tinte statt reinem Schwarz. Gemessener
-   * Kontrast Tinte auf Papier ~13,9:1 — ruhig UND gut lesbar. */
+   * Kontrast Tinte auf Papier ~13,9:1, ruhig UND gut lesbar. */
   --papier:       #F6F2E8;
   --papier-linie: #E0DACA;
   --papier-text:  #2A2722;
@@ -237,7 +237,7 @@ input[type=email], input[type=password], input[type=text] {
 /* ---------- Rechenweg: jeder Schritt ist ein RECHENBLATT ----------
  * Karams Vorgabe (17.08. spät): heller Papierblock mit Zeilen, dunkle
  * Schrift, die Formel groß obenauf, darunter die Bewertung als schmale
- * Zahlenzeile. Farben zurückhaltend — die Zahlen sollen sprechen. */
+ * Zahlenzeile. Farben zurückhaltend, die Zahlen sollen sprechen. */
 .gruppentitel {
   font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase;
   color: var(--signal); margin: 22px 0 6px; padding-left: 2px;
@@ -319,7 +319,7 @@ input[type=email], input[type=password], input[type=text] {
   display: flex; flex-direction: column; gap: 3px;
   font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leise);
 }
-.eingabefeld input, .eingabefeld select {
+.eingabefeld input.eingabefeld select {
   background: var(--grund-tief); color: var(--text);
   border: 1px solid var(--rand); border-radius: 4px;
   padding: 8px 10px; font-size: 0.95rem; min-height: 40px;
@@ -351,8 +351,8 @@ input[type=email], input[type=password], input[type=text] {
   background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
   border: 1px solid var(--rand);
 }
-.warnung.fehler, .warnung.rot { box-shadow: inset 3px 0 0 var(--rot); }
-.warnung.warnung, .warnung.orange { box-shadow: inset 3px 0 0 var(--orange); }
+.warnung.fehler.warnung.rot { box-shadow: inset 3px 0 0 var(--rot); }
+.warnung.warnung.warnung.orange { box-shadow: inset 3px 0 0 var(--orange); }
 .warnung.hinweis { box-shadow: inset 3px 0 0 var(--rand); }
 .warnung.gruen { box-shadow: inset 3px 0 0 var(--gruen); }
 
@@ -394,11 +394,11 @@ footer { margin-top: 46px; }
  * KOSTENREGEL: Alles liegt hinter dem Inhalt (z-index -1), nimmt keine
  * Klicks an und trägt keine Zahl. Kein WebGL, kein Bild, keine
  * JavaScript-Schleife. Bewegt werden ausschließlich `transform` und
- * `opacity` — beides erledigt die Grafikkarte, ohne dass die Seite neu
+ * `opacity`, beides erledigt die Grafikkarte, ohne dass die Seite neu
  * gesetzt wird. Die Taktzeiten sind absichtlich sehr lang (40–90 s), das
  * bleibt ruhig und kostet einen schwachen Laptop praktisch nichts.
  * Wer die Planeten nicht will, löscht diesen Block und das
- * <div class="planeten"> in der index.html — die Funktion bleibt gleich. */
+ * <div class="planeten"> in der index.html, die Funktion bleibt gleich. */
 .planeten {
   position: fixed; inset: 0; z-index: -1; overflow: hidden;
   pointer-events: none;
@@ -408,13 +408,13 @@ footer { margin-top: 46px; }
   will-change: transform;
   animation: schweben 54s ease-in-out infinite alternate;
 }
-/* Die Bänder: liegen IM Planeten, leicht schräg — wie die Wolkenbänder
+/* Die Bänder: liegen IM Planeten, leicht schräg, wie die Wolkenbänder
    eines Gasriesen. Sie sind ABSICHTLICH unbewegt: eine Animation auf
    `background-position` müsste der Browser in jedem Bild neu zeichnen
    (Repaint über die ganze Kugelfläche), und genau das ist die Art von
    Effekt, die schwache Laptops ausbremst. Die Bewegung kommt allein vom
    sehr langsamen Schweben, und das läuft über `transform` auf der
-   Grafikkarte — ohne Neuzeichnen. */
+   Grafikkarte, ohne Neuzeichnen. */
 .planet::before {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: repeating-linear-gradient(
@@ -457,7 +457,7 @@ footer { margin-top: 46px; }
   box-shadow: 0 0 34px rgba(60, 201, 245, 0.07);
   animation-duration: 46s; animation-delay: -22s;
 }
-/* Ein einzelner Ring um den großen Planeten — Orbit, kein Saturnring. */
+/* Ein einzelner Ring um den großen Planeten, Orbit, kein Saturnring. */
 .planet-1 { }
 .orbitring {
   position: absolute; top: -40px; right: -190px;
@@ -485,7 +485,7 @@ footer { margin-top: 46px; }
  * Die Ampel trennt zwei Dinge, die nichts miteinander zu tun haben:
  * ob die Rechnung stimmt, und ob am Ende Geld übrig bleibt. Rot heißt
  * deshalb entweder „Rechenfehler" ODER „richtig gerechnet, aber kein
- * Gewinn" — beides ist ein Grund, nicht zu setzen. */
+ * Gewinn", beides ist ein Grund, nicht zu setzen. */
 .ampel {
   display: flex; align-items: flex-start; gap: 14px;
   padding: 16px 18px; margin: 14px 0 10px;
@@ -569,7 +569,7 @@ footer { margin-top: 46px; }
 .beweis > summary:hover { color: var(--signal); }
 
 /* ---------- HERKUNFT: woher jede Zahl stammt ----------
- * Drei Herkünfte, drei Farben — damit man auf einen Blick sieht, ob
+ * Drei Herkünfte, drei Farben, damit man auf einen Blick sieht, ob
  * eine Zahl aus dem Bericht kommt, vom Anbieter selbst, oder erst hier
  * gerechnet wurde. */
 .herkunftkarte { margin-bottom: 10px; }

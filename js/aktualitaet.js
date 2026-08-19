@@ -1,24 +1,64 @@
-/* ORION PRÜFSTAND — Aktualität
+/* ORION PRÜFSTAND, Aktualität
  *
  * Schaut EINMALIG (auf Klick, nie im Takt) beim Anbieter nach, ob die
- * Zahlen des Berichts noch stimmen — und rechnet den Eintrag danach mit
+ * Zahlen des Berichts noch stimmen, und rechnet den Eintrag danach mit
  * den aktuellen Zahlen komplett neu.
  *
  * Ehrlichkeit vor Vollständigkeit (drei Zustände, nie zwei):
  *   Polymarket  prüfbar aus dem Browser (Gamma-Katalog + CLOB-Orderbuch;
- *               side=sell ist der ASK, also der Kaufpreis — side=buy wäre
+ *               side=sell ist der ASK, also der Kaufpreis, side=buy wäre
  *               der Bid und erzeugte Schein-Arbitrage)
  *   Kalshi      Versuch über die öffentliche Schnittstelle; blockt der
  *               Browser (CORS), wird das GESAGT statt geraten
  *   Smarkets    wie Kalshi; zusätzlich ist der Marktlink nur die PARTIE,
  *               der Zielmarkt muss über den Namen gefunden werden
- *   Betfair     aus dem Browser NICHT prüfbar (Ländersperre/Cloudflare) —
- *               nur die Bridge am Heim-PC kann Betfair lesen. Der Prüfstand
+ *   Betfair     aus dem Browser NICHT prüfbar (Ländersperre/Cloudflare),  *               nur die Bridge am Heim-PC kann Betfair lesen. Der Prüfstand
  *               sagt das und verweist auf den Orbit-Link zum Selbstablesen.
  */
 (function (welt) {
   'use strict';
 
+  /* ---------- Der eigene Abruf-Dienst ----------
+   * Kalshi und Smarkets weisen den Browser ab (CORS, gemessen).
+   * Vom Server aus antworten beide. Deshalb dieser Weg: der Browser
+   * versucht es zuerst selbst, und erst wenn das scheitert, fragt er
+   * den eigenen Dienst im eigenen Supabase-Projekt.
+   *
+   * Fehlt der Dienst, aendert sich NICHTS am Verhalten: dann steht
+   * weiterhin ehrlich 'nicht pruefbar' da. Kein stiller Ausfall. */
+  var ABRUF_DIENST = 'https://jjvceatwrzxycrzmowbt.supabase.co/functions/v1/abruf';
+  var ABRUF_SCHLUESSEL = 'sb_publishable_QTVkKApv-zS4SEoeavxcZA_JiF-wqvg';
+
+  /* Die eigene Bruecke am eigenen Rechner, nur fuer Betfair. Laeuft
+   * sie nicht, bleibt es beim ehrlichen 'nicht pruefbar' und dem
+   * Orbit-Link zum Selbstablesen. Sie liest nur, sie setzt nichts. */
+  var BRUECKE = 'http://127.0.0.1:8791/';
+
+  function ueberBruecke(auftrag) {
+    return fetch(BRUECKE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(auftrag)
+    }).then(function (a) {
+      if (!a.ok) throw new Error('Bruecke antwortet HTTP ' + a.status);
+      return a.json();
+    });
+  }
+
+  function ueberDienst(auftrag) {
+    return fetch(ABRUF_DIENST, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: ABRUF_SCHLUESSEL,
+        Authorization: 'Bearer ' + ABRUF_SCHLUESSEL
+      },
+      body: JSON.stringify(auftrag)
+    }).then(function (a) {
+      if (!a.ok) throw new Error('Dienst antwortet HTTP ' + a.status);
+      return a.json();
+    });
+  }
   function holeJson(url, optionen) {
     return fetch(url, optionen || {}).then(function (antwort) {
       if (!antwort.ok) throw new Error('HTTP ' + antwort.status);
@@ -64,7 +104,7 @@
         }
         var markt = maerkte[0];
         if (markt.closed === true || markt.active === false) {
-          return { status: 'vorbei', text: 'Der Markt ist bei Polymarket geschlossen — die Zahlen des Berichts sind Geschichte.' };
+          return { status: 'vorbei', text: 'Der Markt ist bei Polymarket geschlossen, die Zahlen des Berichts sind Geschichte.' };
         }
         /* Die Details fuer die Paarungspruefung: Was fragt der Markt
          * wirklich, wann ist Anpfiff, zu welcher Serie/Liga gehoert er?
@@ -154,8 +194,14 @@
         if (!(preis > 0 && preis < 1)) return { status: 'unpruefbar', text: 'Kalshi nennt keinen gültigen Briefkurs.' };
         return { status: 'ok', wert: preis, quelle: 'Kalshi trade-api, ' + (s === 'nein' ? 'no_ask' : 'yes_ask') };
       })
-      .catch(function (f) {
-        return { status: 'unpruefbar', text: 'Kalshi ist aus dem Browser nicht erreichbar (' + f.message + ') — im geöffneten Kalshi-Fenster ablesen.' };
+      .catch(function () {
+        /* Der Browser darf nicht. Also fragt der eigene Dienst. */
+        return ueberDienst({ buch: 'kalshi', kennung: ticker, seite: String(seite.seiteText || 'ja').toLowerCase() })
+          .catch(function (f2) {
+            return { status: 'unpruefbar',
+              text: 'Kalshi ist weder aus dem Browser noch ueber den eigenen Abruf-Dienst erreichbar (' +
+                    f2.message + '). Im geoeffneten Kalshi-Fenster ablesen.' };
+          });
       });
   }
 
@@ -172,11 +218,16 @@
         if (!maerkte.length) return { status: 'unpruefbar', text: 'Smarkets nennt keine Märkte zur Partie.' };
         return { status: 'teilweise',
                  text: 'Smarkets erreichbar: die Partie führt ' + maerkte.length + ' Märkte. Der Bericht verlinkt ' +
-                   'nur die PARTIE — welcher Markt gemeint ist, steht auf der Panel-Karte. Kurs bitte dort ablesen; ' +
+                   'nur die PARTIE, welcher Markt gemeint ist, steht auf der Panel-Karte. Kurs bitte dort ablesen; ' +
                    'eine automatische Zuordnung wäre geraten, und geraten wird hier nicht.' };
       })
-      .catch(function (f) {
-        return { status: 'unpruefbar', text: 'Smarkets ist aus dem Browser nicht erreichbar (' + f.message + ') — im geöffneten Smarkets-Fenster ablesen.' };
+      .catch(function () {
+        return ueberDienst({ buch: 'smarkets', ereignis: eventId })
+          .catch(function (f2) {
+            return { status: 'unpruefbar',
+              text: 'Smarkets ist weder aus dem Browser noch ueber den eigenen Abruf-Dienst erreichbar (' +
+                    f2.message + '). Im geoeffneten Smarkets-Fenster ablesen.' };
+          });
       });
   }
 
@@ -186,16 +237,24 @@
     if (seite.buchNorm === 'kalshi') return pruefeKalshi(seite);
     if (seite.buchNorm === 'smarkets') return pruefeSmarkets(seite);
     if (seite.buchNorm === 'betfair') {
-      return Promise.resolve({
-        status: 'unpruefbar',
-        text: 'Betfair ist aus dem Browser nicht lesbar (Ländersperre/Cloudflare) — das kann nur die Bridge ' +
-          'am Heim-PC. Den Orbit-Link öffnen und die Quote von Hand vergleichen.'
-      });
+      /* Die Marktnummer steht im Orbit-Link: .../market/1.240000000 */
+      var mm = String(seite.link || '').match(/market\/(1\.\d+)/);
+      if (!mm) {
+        return Promise.resolve({ status: 'unpruefbar',
+          text: 'Im Betfair-Link steht keine Marktnummer, also kann auch die eigene Bruecke nichts nachschlagen.' });
+      }
+      return ueberBruecke({ marktId: mm[1], auswahl: seite.ausgang, seite: seite.seiteText })
+        .catch(function () {
+          return { status: 'unpruefbar',
+            text: 'Betfair ist aus dem Browser gesperrt, und die eigene Bruecke laeuft gerade nicht. ' +
+              'Entweder sie starten (bruecke/LIESMICH.md) oder den Orbit-Link oeffnen und die Quote ' +
+              'von Hand vergleichen.' };
+        });
     }
     return Promise.resolve({ status: 'unpruefbar', text: 'Unbekanntes Buch „' + (seite.buch || '?') + '".' });
   }
 
-  /* Beide Seiten prüfen und — wo es frische Zahlen gibt — den ganzen
+  /* Beide Seiten prüfen und, wo es frische Zahlen gibt, den ganzen
    * Eintrag mit den AKTUELLEN Zahlen neu rechnen. */
   function pruefeBericht(bericht) {
     var R = welt.PS.rechnung;

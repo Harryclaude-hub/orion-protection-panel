@@ -1,4 +1,4 @@
-/* ORION PROTECTION PANEL — Einsatzrechner
+/* ORION PROTECTION PANEL, Einsatzrechner
  *
  * Der Bericht des Panels rechnet immer mit 100 als Grundeinsatz. Wer
  * wirklich setzt, hat aber einen anderen Betrag, muss auf brauchbare
@@ -7,7 +7,7 @@
  * im Konto liegt.
  *
  * Fachlich übernommen sind die Arbeitsschritte, die jeder professionelle
- * Surebet-Rechner kennt (BetBurger und Vergleichbare) — die Rechnung ist
+ * Surebet-Rechner kennt (BetBurger und Vergleichbare), die Rechnung ist
  * hier eigenständig umgesetzt:
  *
  *   1. Aufteilung auf gleiche Auszahlung        (ungerundet, das Ideal)
@@ -24,7 +24,7 @@
  * höheren nennt, verspricht Geld, das nur bei einem von zwei Ausgängen
  * kommt. Hier zählt immer der schlechtere.
  *
- * Kein DOM, kein fetch — reine Mathematik, im Node-Prüfstand testbar.
+ * Kein DOM, kein fetch, reine Mathematik, im Node-Prüfstand testbar.
  */
 (function (welt) {
   'use strict';
@@ -54,7 +54,7 @@
     var ideal2 = gesamt - ideal1;
     var idealRendite = (1 / inv - 1) * 100;
 
-    /* 2) Gerundet — so wird wirklich gesetzt. */
+    /* 2) Gerundet, so wird wirklich gesetzt. */
     var s1 = aufSchritt(ideal1, schritt);
     var s2 = aufSchritt(ideal2, schritt);
     /* Ein Einsatz von 0 wäre keine Absicherung, sondern eine offene Wette. */

@@ -1,11 +1,11 @@
-/* ORION PRÜFSTAND — Verlauf und Anmeldung
+/* ORION PRÜFSTAND, Verlauf und Anmeldung
  *
  * Jede Prüfung wird aufgehoben, damit sie auf JEDEM Gerät nachlesbar ist:
  *   - angemeldet: in Supabase, Tabelle `pruefstand_verlauf` (nur der eigene
- *     Nutzer sieht seine Zeilen — Row Level Security)
+ *     Nutzer sieht seine Zeilen, Row Level Security)
  *   - ohne Anmeldung: nur im Browser-Speicher dieses Geräts
  *
- * ABSICHTLICH GETRENNT vom Orion Panel — bis in die Datenbank: der
+ * ABSICHTLICH GETRENNT vom Orion Panel, bis in die Datenbank: der
  * Prüfstand hat sein EIGENES Supabase-Projekt (`orion-pruefstand`,
  * jjvceatwrzxycrzmowbt). Kein gemeinsames Projekt, keine gemeinsame
  * Tabelle, kein Takt, kein Abgleich. Fällt eines aus, läuft das andere.
@@ -56,7 +56,7 @@
       .then(function (r) {
         if (r.ok && r.daten.access_token) { sitzungMerken(r.daten, email); return { ok: true }; }
         var grund = (r.daten && (r.daten.error_description || r.daten.msg || r.daten.message)) || ('HTTP ' + r.status);
-        if (/invalid login/i.test(grund)) grund = 'E-Mail oder Passwort stimmen nicht — oder das Konto ist noch nicht bestätigt.';
+        if (/invalid login/i.test(grund)) grund = 'E-Mail oder Passwort stimmen nicht, oder das Konto ist noch nicht bestätigt.';
         return { ok: false, grund: grund };
       })
       .catch(function (f) { return { ok: false, grund: 'Keine Verbindung: ' + f.message }; });
@@ -103,7 +103,7 @@
     return fetch(URL_BASIS + '/rest/v1/' + pfad, o).then(function (a) {
       if (a.status === 401 && !zweiterVersuch) {
         return erneuern().then(function (ging) {
-          if (!ging) throw new Error('Anmeldung abgelaufen — bitte neu anmelden.');
+          if (!ging) throw new Error('Anmeldung abgelaufen, bitte neu anmelden.');
           return rest(pfad, optionen, true);
         });
       }

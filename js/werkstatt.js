@@ -1,7 +1,7 @@
-/* ORION PROTECTION PANEL — Rechen-Werkstatt
+/* ORION PROTECTION PANEL, Rechen-Werkstatt
  *
  * Karams Vorgabe (18.08.): ganz unten Felder, in denen man die Zahlen
- * SELBST ändern kann, und die dann mitrechnen — „falls doch was nicht
+ * SELBST ändern kann, und die dann mitrechnen, „falls doch was nicht
  * stimmt". Dazu ein Notizblock zum Mitschreiben.
  *
  * Die Werkstatt ist bewusst vom Prüfteil getrennt:
@@ -12,7 +12,7 @@
  *
  * Beim ersten Öffnen werden die Zahlen des Berichts übernommen; ein Knopf
  * holt sie jederzeit zurück. Gerechnet wird mit denselben Formeln wie
- * oben (rechnung.js + einsatz.js) — es gibt keine zweite Wahrheit.
+ * oben (rechnung.js + einsatz.js), es gibt keine zweite Wahrheit.
  */
 (function (welt) {
   'use strict';
@@ -32,7 +32,7 @@
 
   var NOTIZ_ABLAGE = 'pruefstand_notiz';
 
-  /* Rechnet, was gerade in den Feldern steht. Reine Anzeige — kein
+  /* Rechnet, was gerade in den Feldern steht. Reine Anzeige, kein
    * Speichern, kein Urteil, keine Rückwirkung auf die Prüfung oben. */
   function rechne() {
     var R = P.rechnung, E = P.einsatz;
@@ -55,7 +55,7 @@
     var ziel = el('w-ergebnis');
 
     if (qe1 === null || qe2 === null) {
-      ziel.innerHTML = '<div class="leise">Trage beide Kurse und beide Gebührensätze ein, Chef — ' +
+      ziel.innerHTML = '<div class="leise">Trage beide Kurse und beide Gebührensätze ein, Chef, ' +
         'Anteilspreis zwischen 0 und 1, Quote über 1.</div>';
       return;
     }
@@ -89,7 +89,7 @@
       '<div class="wzeile"><span class="wname">Kehrwertsumme</span>' +
         '<b class="mono ' + (inv < 1 ? 'gruen' : 'rot') + '">' + txt(f(inv, 4)) + '</b>' +
         '<span class="leise klein mono">1 ÷ ' + txt(f(qe1, 4)) + ' + 1 ÷ ' + txt(f(qe2, 4)) +
-        (inv < 1 ? ' — unter 1, also Vorteil' : ' — nicht unter 1, kein Vorteil') + '</span></div>' +
+        (inv < 1 ? ', unter 1, also Vorteil' : ', nicht unter 1, kein Vorteil') + '</span></div>' +
       '<div class="wzeile"><span class="wname">Rendite ohne Rundung</span>' +
         '<b class="mono">' + (plan.idealRendite >= 0 ? '+' : '') + txt(f(plan.idealRendite, 2)) + ' %</b>' +
         '<span class="leise klein mono">(1 ÷ ' + txt(f(inv, 4)) + ' − 1) × 100</span></div>' +

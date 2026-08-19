@@ -1,4 +1,4 @@
-/* ORION PRÜFSTAND — Link-Prüfung
+/* ORION PRÜFSTAND, Link-Prüfung
  *
  * Beantwortet je Seite: Führt der Link plausibel zu GENAU dieser Partie?
  * Zwei Stufen, beide ohne Netz (das Netz kommt erst in der Aktualität):
@@ -8,12 +8,11 @@
  *   2. Wortabgleich: Die Wörter des Link-Pfads gegen die Wörter von
  *      Spiel/Frage, Partie und Ausgang. Stoppwörter nach der Panel-Lehre
  *      (Fehlerklasse 11): reine Zahlen und will/does/did/would/shall
- *      belegen NICHTS — »200« traf »Bitcoin $200,000«, »will« verband
+ *      belegen NICHTS, »200« traf »Bitcoin $200,000«, »will« verband
  *      einen Cricketspieler mit einer Wahlfrage.
  *
  * Drei Zustände, nie zwei: passt · passt NICHT · von außen nicht prüfbar.
- * Kalshi-Kennungen und Orbit-Marktnummern tragen keine Klartext-Wörter —
- * dort wird das GESAGT statt ein Urteil zu erfinden.
+ * Kalshi-Kennungen und Orbit-Marktnummern tragen keine Klartext-Wörter,  * dort wird das GESAGT statt ein Urteil zu erfinden.
  */
 (function (welt) {
   'use strict';
@@ -70,11 +69,11 @@
   function pfadWoerter(buchNorm, link) {
     var pfad = String(link || '').replace(/^https?:\/\/[^/]+/i, '').split(/[?#]/)[0];
     if (buchNorm === 'polymarket') {
-      /* /event/<event-slug>/<markt-slug> — beide Slugs tragen die Partie. */
+      /* /event/<event-slug>/<markt-slug>, beide Slugs tragen die Partie. */
       return woerter(pfad.replace(/^\/event\//, ' '));
     }
     if (buchNorm === 'smarkets') {
-      /* /event/<nr>/sport/…/<partie-slug>/… — die Nummer fällt eh raus. */
+      /* /event/<nr>/sport/…/<partie-slug>/…, die Nummer fällt eh raus. */
       return woerter(pfad);
     }
     return woerter(pfad);
@@ -85,7 +84,7 @@
   function pruefeSeite(bericht, seite) {
     if (!seite) return null;
     if (!seite.link) {
-      return { urteil: 'falsch', text: 'Kein Link im Bericht — beide Links sind Pflicht (Panel-Regel 8.3).' };
+      return { urteil: 'falsch', text: 'Kein Link im Bericht, beide Links sind Pflicht (Panel-Regel 8.3).' };
     }
     var d = domaene(seite.link);
     if (!d) return { urteil: 'falsch', text: 'Der Link ist keine gültige Adresse: ' + seite.link };
@@ -101,17 +100,17 @@
       }
     }
 
-    /* Stufe 2: Wortabgleich — nur wo der Link Klartext trägt. */
+    /* Stufe 2: Wortabgleich, nur wo der Link Klartext trägt. */
     if (seite.buchNorm === 'kalshi') {
       return { urteil: 'unpruefbar',
-        text: 'Adresse gehört zu Kalshi ✓. Die Kennung im Link trägt keine Klartext-Wörter — ' +
+        text: 'Adresse gehört zu Kalshi ✓. Die Kennung im Link trägt keine Klartext-Wörter, ' +
           'ob sie DIESE Partie meint, ist von außen nicht belegbar. Beim Öffnen den Titel vergleichen.' };
     }
     if (seite.buchNorm === 'betfair') {
       var mn = String(seite.link).match(/market\/(1\.\d+)/);
       return { urteil: 'unpruefbar',
         text: 'Adresse gehört zu Orbit/Betfair ✓' + (mn ? ', Marktnummer ' + mn[1] : '') +
-          '. Die Nummer trägt keine Wörter — ob sie DIESE Partie meint, kann nur die Bridge oder ' +
+          '. Die Nummer trägt keine Wörter, ob sie DIESE Partie meint, kann nur die Bridge oder ' +
           'das geöffnete Fenster zeigen.' };
     }
 
@@ -140,11 +139,11 @@
     if (treffer === 0 && slug.length >= 3) {
       return { urteil: 'falsch',
         text: 'Adresse gehört zwar zu ' + seite.buch + ', aber KEIN Wort des Links (' + slug.join(', ') +
-          ') kommt in Spiel/Partie vor — der Link führt sehr wahrscheinlich zu einer ANDEREN Partie.' };
+          ') kommt in Spiel/Partie vor, der Link führt sehr wahrscheinlich zu einer ANDEREN Partie.' };
     }
     return { urteil: 'unpruefbar',
       text: 'Adresse gehört zu ' + seite.buch + ' ✓, aber nur ' + treffer + ' von ' + slug.length +
-        ' Link-Wörtern passen (offen: ' + fehlend.join(', ') + ') — beim Öffnen die Partie vergleichen.' };
+        ' Link-Wörtern passen (offen: ' + fehlend.join(', ') + '), beim Öffnen die Partie vergleichen.' };
   }
 
   function pruefen(bericht) {

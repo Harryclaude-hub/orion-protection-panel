@@ -1,18 +1,18 @@
-/* ORION PROTECTION PANEL — Paarungsprüfung
+/* ORION PROTECTION PANEL, Paarungsprüfung
  *
  * Die gefährlichste Fehlerklasse ist nicht die Rechnung, sondern die
  * PAARUNG: zwei Bücher, die verschiedene Spiele meinen. Die Rechnung ist
- * dann fehlerfrei — und die Wette trotzdem offen.
+ * dann fehlerfrei, und die Wette trotzdem offen.
  *
  * Das Orion Panel hat dagegen am 18.08.2026 drei Sperren bekommen (Alter,
- * Zeit, Liga). Dieses Modul baut sie EIGENSTÄNDIG nach — nicht kopiert,
+ * Zeit, Liga). Dieses Modul baut sie EIGENSTÄNDIG nach, nicht kopiert,
  * sondern zweite Fassung: rechnen beide gleich, ist die Paarung belastbar;
  * rechnen sie verschieden, wird die Stelle genannt. Genau dasselbe
  * Prinzip wie bei den Quoten.
  *
  * Geprüft wird auf vier Ebenen, so tief wie der Bericht es zulässt:
  *
- *   ALTER    U15–U23 auf einer Seite, erste Elf auf der anderen — der
+ *   ALTER    U15–U23 auf einer Seite, erste Elf auf der anderen, der
  *            Fund des Auftraggebers; Namen sehen identisch aus.
  *   GESCHLECHT  Frauen- gegen Männerpartie.
  *   RESERVE  Zweite Mannschaft / Academy / "(Res)" gegen erste.
@@ -24,7 +24,7 @@
  *   LIGA     Jugend-, Reserve- oder Frauenliga auf einer Seite.
  *
  * Grundregel wie überall: Fehlt eine Angabe, wird NICHT gesperrt und
- * NICHT geraten — ungemessen ist nicht falsch, aber es wird gesagt.
+ * NICHT geraten, ungemessen ist nicht falsch, aber es wird gesagt.
  */
 (function (welt) {
   'use strict';
@@ -41,7 +41,7 @@
   /* ---------- Die Kennungen ----------
    * Alter: u15 bis u23, auch "U-21", "U 21", "Under 21".
    * Frauen: women/ladies/frauen/femenin/damen.
-   * Reserve: nur als ENDUNG oder eingeklammert — "Boca Juniors" trägt
+   * Reserve: nur als ENDUNG oder eingeklammert, "Boca Juniors" trägt
    * das b nicht am Ende, "Godoy Cruz (Res)" schon. */
   var ALTER = /(^|[^a-z0-9])(?:u|under)\s?-?\s?(1[5-9]|2[0-3])(?![0-9])/;
   var FRAUEN = /(women|womens|ladies|frauen|femenin|feminin|damen|feminile)/;
@@ -72,7 +72,7 @@
 
   /* ---------- Zeit ----------
    * Zwei Zeitpunkte, Toleranz in Minuten. Fehlt einer, ist das Ergebnis
-   * 'unbekannt' — nicht 'passt'. Der Unterschied ist wichtig: das Panel
+   * 'unbekannt', nicht 'passt'. Der Unterschied ist wichtig: das Panel
    * darf nicht sperren, der Prüfstand muss es SAGEN. */
   function zeitAbstand(a, b) {
     var ta = typeof a === 'number' ? a : Date.parse(String(a || ''));
@@ -84,15 +84,15 @@
   var ZEIT_TOLERANZ_MIN = 180;
 
   function zeitUrteil(minuten) {
-    if (minuten === null) return { urteil: 'unbekannt', text: 'nur eine Seite nennt einen Anpfiff — nicht vergleichbar' };
+    if (minuten === null) return { urteil: 'unbekannt', text: 'nur eine Seite nennt einen Anpfiff, nicht vergleichbar' };
     if (minuten <= 5) return { urteil: 'passt', text: 'derselbe Anpfiff (Abstand ' + Math.round(minuten) + ' min)' };
     if (minuten <= ZEIT_TOLERANZ_MIN) {
-      return { urteil: 'passt', text: 'Anpfiff ' + Math.round(minuten) + ' min auseinander — innerhalb der belegten Toleranz von ' +
+      return { urteil: 'passt', text: 'Anpfiff ' + Math.round(minuten) + ' min auseinander, innerhalb der belegten Toleranz von ' +
                ZEIT_TOLERANZ_MIN + ' min' };
     }
     return { urteil: 'falsch', text: 'Anpfiff ' + Math.round(minuten) + ' min auseinander. Panel-Messung an 274 Paaren: ' +
              'zwischen 2 und 3 Stunden lag KEIN echtes Paar, alle Ausreißer darüber waren Fehlpaarungen. ' +
-             'Sehr wahrscheinlich zwei verschiedene Spiele — oder Hin- und Rückspiel.' };
+             'Sehr wahrscheinlich zwei verschiedene Spiele, oder Hin- und Rückspiel.' };
   }
 
   /* ---------- Liga ----------
@@ -117,12 +117,12 @@
 
   /* ---------- Die Gesamtprüfung ----------
    * quellen: { seite1: {titel, ausgang, link, zeit, liga}, seite2: {…} }
-   * Alles, was fehlt, wird als 'unbekannt' geführt — nie geraten. */
+   * Alles, was fehlt, wird als 'unbekannt' geführt, nie geraten. */
   function pruefe(quellen) {
     var s1 = quellen.seite1 || {}, s2 = quellen.seite2 || {};
     var befunde = [];
 
-    /* 1) Kennungen: Alter, Geschlecht, Reserve — aus ALLEN Textquellen
+    /* 1) Kennungen: Alter, Geschlecht, Reserve, aus ALLEN Textquellen
      *    der jeweiligen Seite, denn die Kennung kann im Partienamen, im
      *    Ausgang oder im Link stehen. */
     var text1 = [s1.titel, s1.partie, s1.ausgang, s1.link].filter(Boolean).join(' ');
@@ -138,7 +138,7 @@
         wert1: kennungText(k1), wert2: kennungText(k2) });
     } else {
       befunde.push({ art: 'Kennung (Alter/Frauen/Reserve)', urteil: 'falsch',
-        text: 'UNTERSCHIEDLICHE Kennung — Seite 1 ist „' + kennungText(k1) + '", Seite 2 ist „' +
+        text: 'UNTERSCHIEDLICHE Kennung, Seite 1 ist „' + kennungText(k1) + '", Seite 2 ist „' +
               kennungText(k2) + '". Das ist der Fund des Auftraggebers: erste Elf gegen U21 ' +
               'sieht am Namen identisch aus und ist doch ein anderes Spiel.',
         wert1: kennungText(k1), wert2: kennungText(k2) });
@@ -159,13 +159,12 @@
     var hatText2 = !!norm([s2.liga, s2.titel, s2.link].filter(Boolean).join(" "));
     if (!l1 && !l2 && hatText1 && hatText2) {
       /* Beide Seiten liefern Text, und KEINE trägt einen Jugend-,
-       * Reserve- oder Frauen-Hinweis. Die Sperre greift also nicht —
-       * das ist eine echte Aussage, kein Nichtwissen. Was sie NICHT
+       * Reserve- oder Frauen-Hinweis. Die Sperre greift also nicht,        * das ist eine echte Aussage, kein Nichtwissen. Was sie NICHT
        * sagt: ob es wirklich derselbe Wettbewerb ist. Genau deshalb
        * steht der Hinweis dabei. */
       befunde.push({ art: "Liga", urteil: "passt",
         text: "Keine Jugend-, Reserve- oder Frauenliga erkennbar. Ob es derselbe Wettbewerb " +
-              "ist, sagt das nicht — dafür beide Links öffnen und die Wettbewerbsnamen lesen.",
+              "ist, sagt das nicht, dafür beide Links öffnen und die Wettbewerbsnamen lesen.",
         wert1: "unauffällig", wert2: "unauffällig" });
     } else if (l1 && l2 && l1 === l2) {
       befunde.push({ art: 'Liga', urteil: 'passt', text: 'Beide Seiten deuten auf dieselbe Art Liga (' + l1 + ').',
@@ -178,7 +177,7 @@
         wert1: l1 || 'kein Hinweis', wert2: l2 || 'kein Hinweis' });
     } else {
       befunde.push({ art: 'Liga', urteil: 'unbekannt',
-        text: 'Keine der beiden Seiten nennt eine Liga — aus dem Bericht nicht prüfbar. ' +
+        text: 'Keine der beiden Seiten nennt eine Liga, aus dem Bericht nicht prüfbar. ' +
               'Beim Öffnen der Links die Wettbewerbsnamen vergleichen.',
         wert1: 'nicht genannt', wert2: 'nicht genannt' });
     }
