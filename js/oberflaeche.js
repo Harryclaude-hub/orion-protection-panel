@@ -55,6 +55,49 @@
     return zustand.paarung;
   }
 
+  /* ---------- ABGLEICH: Bericht gegen Anbieter (Karam 19.08.) ----
+   * Bis hierher kamen alle Eingangswerte aus dem Bericht. Wer die
+   * Gebuehr glaubt, die er pruefen soll, prueft nichts. Ab jetzt
+   * werden Kurs, Gebuehrensatz und Menge beim Anbieter selbst geholt
+   * und gegen den Bericht gestellt. */
+  function abgleichZeichnen() {
+    var b = zustand.bericht, akt = zustand.aktualitaet;
+    if (!b) return;
+    if (!akt) {
+      el("abgleich").innerHTML = "";
+      zustand.abgleich = null;
+      return;
+    }
+    var ab = P.abgleich.pruefe(b, akt);
+    zustand.abgleich = ab;
+
+    var kopf = ab.stufe === "deckt sich"
+      ? { klasse: "gruen", text: "Alle vom Anbieter abfragbaren Angaben decken sich mit dem Bericht." }
+      : (ab.stufe === "weicht ab"
+        ? { klasse: "rot", text: ab.anzahlAbweichungen + " Angabe(n) im Bericht stimmen NICHT mit dem Anbieter ueberein." +
+            (ab.gebuehrFalsch ? " Darunter der Gebuehrensatz, der in jede Zeile der Rechnung eingeht." : "") }
+        : { klasse: "orange", text: "Teilweise abgeglichen. Was der Anbieter nicht hergibt, bleibt ungeprueft." });
+
+    var zeilen = ab.befunde.map(function (x) {
+      var marke = x.urteil === "deckt sich" ? "ok" : (x.urteil === "weicht ab" ? "abweichung" : "unpruefbar");
+      function wert(v) { return (v === null || v === undefined) ? "&mdash;" : txt(String(v)); }
+      return "<tr class=\"pz-" + (x.urteil === "weicht ab" ? "falsch" : "") + "\">" +
+        "<td class=\"hkwas\">Seite " + txt(x.nr) + " " + txt(x.buch) + "</td>" +
+        "<td class=\"hkwas\">" + txt(x.art) + "</td>" +
+        "<td class=\"mono klein\">" + wert(x.bericht) + "</td>" +
+        "<td class=\"mono klein\">" + wert(x.anbieter) + "</td>" +
+        "<td><span class=\"marke " + marke + "\">" + txt(x.urteil) + "</span>" +
+        "<div class=\"leise klein\">" + txt(x.text) + "</div></td></tr>";
+    }).join("");
+
+    el("abgleich").innerHTML =
+      "<div class=\"karte\"><div class=\"kartentitel\">Bericht gegen Anbieter, Wert fuer Wert</div>" +
+      "<div class=\"warnung " + kopf.klasse + "\">" + txt(kopf.text) + "</div>" +
+      "<div class=\"tabellenrahmen\"><table class=\"hktabelle\">" +
+      "<thead><tr><th>Seite</th><th>Angabe</th><th>im Bericht</th><th>beim Anbieter</th><th>Urteil</th></tr></thead>" +
+      "<tbody>" + zeilen + "</tbody></table></div></div>";
+  }
+
   /* ---------- HERKUNFT + PAARUNG (Karams Vorgabe 18.08.) ----------
    * Über der Übersicht: jede Angabe mit ihrer Quelle, plus der tiefe
    * Vergleich beider Seiten (Alter, Zeit, Liga) — dieselben drei
@@ -85,12 +128,34 @@
     var schritt = Number(el('einsatz-schritt').value) || 0.01;
     var maxE = (b.rechnung && isFinite(b.rechnung.maxEinsatz)) ? b.rechnung.maxEinsatz : null;
 
-    var plan = (isFinite(erg.qe1) && isFinite(erg.qe2))
-      ? E.rechne({ qe1: erg.qe1, qe2: erg.qe2, gesamt: betrag, schritt: schritt, maxEinsatz: maxE })
+    /* Mit welchen Zahlen rechnen wir hier? Mit den echten, sobald der
+     * Anbieter welche liefert. Sonst mit denen des Berichts. Was davon
+     * gilt, steht sichtbar in der Uebersicht. */
+    var qe1 = erg.qe1, qe2 = erg.qe2, frisch = { kurs: 0, gebuehr: 0 };
+    var echt = zustand.aktualitaet ? P.abgleich.echteWerte(b, zustand.aktualitaet) : null;
+    if (echt && echt.length >= 2) {
+      var e1 = P.rechnung.qeSeite(echt[0].art, echt[0].seiteText, echt[0].wert, echt[0].gebuehr);
+      var e2 = P.rechnung.qeSeite(echt[1].art, echt[1].seiteText, echt[1].wert, echt[1].gebuehr);
+      if (isFinite(e1.qe) && isFinite(e2.qe)) { qe1 = e1.qe; qe2 = e2.qe; }
+      [0, 1].forEach(function (i) {
+        if (echt[i].wertFrisch) frisch.kurs++;
+        if (echt[i].gebuehrFrisch) frisch.gebuehr++;
+      });
+      /* Der Hoechsteinsatz ebenfalls aus dem Orderbuch, wenn messbar:
+       * es zaehlt die duennere der beiden Seiten. */
+      var mengen = echt.filter(function (x) { return x.mengeFrisch; })
+        .map(function (x) { return x.menge; });
+      if (mengen.length) maxE = Math.min.apply(null, mengen.concat(isFinite(maxE) ? [maxE] : []));
+    }
+    zustand.gerechnetMit = frisch;
+
+    var plan = (isFinite(qe1) && isFinite(qe2))
+      ? E.rechne({ qe1: qe1, qe2: qe2, gesamt: betrag, schritt: schritt, maxEinsatz: maxE })
       : null;
     var fluss = plan ? B.geldfluss({
-      seite1: b.seiten[0], seite2: b.seiten[1],
-      qe1: erg.qe1, qe2: erg.qe2, s1: plan.s1, s2: plan.s2
+      seite1: (echt && echt[0]) || b.seiten[0],
+      seite2: (echt && echt[1]) || b.seiten[1],
+      qe1: qe1, qe2: qe2, s1: plan.s1, s2: plan.s2
     }) : null;
 
     var warn = erg.warnungen.filter(function (w) { return w.stufe === 'warnung'; }).length;
@@ -99,6 +164,10 @@
      * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
     var paar = paarungRechnen();
     var paarungFalsch = paar && paar.stufe === "falsch";
+    /* Ein falscher Gebuehrensatz im Bericht wiegt schwer: er geht in
+     * jede Zeile ein und macht die ganze Rendite unglaubwuerdig. */
+    var abw = zustand.abgleich;
+    if (abw && abw.gebuehrFalsch) harte = harte + 1;
     var a = B.ampel({
       rechnungStufe: erg.urteil.stufe,
       paarungStufe: paar ? paar.stufe : null,
@@ -111,6 +180,8 @@
     el('uebersicht').innerHTML = P.uebersicht.baue({
       bericht: b, ergebnis: erg, plan: plan, fluss: fluss, ampel: a,
       aktualitaet: zustand.aktualitaet,
+      gerechnetMit: frisch,
+      abgleich: zustand.abgleich,
       einheit: (b.rechnung && b.rechnung.sEinheit) || ''
     });
   }
@@ -127,6 +198,7 @@
       if (zustand.bericht !== b) return;   /* zwischenzeitlich neuer Bericht */
       zustand.aktualitaet = akt;
       aktualitaetZeichnen(akt, b);
+      abgleichZeichnen();
       uebersichtZeichnen();
       herkunftZeichnen();
     }).catch(function (fehler) {
@@ -518,6 +590,7 @@
 
     el('ergebnis').style.display = '';
     urteilZeichnen(erg, b);
+    abgleichZeichnen();
     uebersichtZeichnen();
     herkunftZeichnen();
     aufteilungZeichnen(b);

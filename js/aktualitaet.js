@@ -71,7 +71,17 @@
          * Genau diese Angaben entscheiden, ob beide Buecher DASSELBE
          * Spiel meinen (Karams Vorgabe 18.08.). */
         var ereignis = (markt.events && markt.events[0]) || {};
+        /* Der Gebuehrensatz, wie ihn der Anbieter selbst nennt. Bis
+         * heute wurde er aus dem Bericht uebernommen, also genau die
+         * Zahl geglaubt, die geprueft werden soll. */
+        var gs = markt.feeSchedule || {};
+        var satzEcht = (markt.feesEnabled === false) ? 0
+          : (typeof gs.rate === 'number' ? gs.rate : null);
         var einzel = {
+          gebuehrSatz: satzEcht,
+          gebuehrNurTaker: gs.takerOnly === true,
+          mindestGroesse: typeof markt.orderMinSize === 'number' ? markt.orderMinSize : null,
+          tickGroesse: typeof markt.orderPriceMinTickSize === 'number' ? markt.orderPriceMinTickSize : null,
           frage: markt.question || markt.title || null,
           ereignis: ereignis.title || null,
           anpfiff: markt.gameStartTime || ereignis.startDate || markt.startDate || null,
@@ -85,9 +95,25 @@
         if (!tokens[idx]) {
           return { status: 'unpruefbar', text: 'Der Markt nennt keine Orderbuch-Kennung für diesen Ausgang.' };
         }
-        /* side=sell = ASK = Kaufpreis. NIE side=buy, nie outcomePrices. */
-        return holeJson('https://clob.polymarket.com/price?token_id=' + tokens[idx] + '&side=sell')
-          .then(function (p) {
+        /* Das ganze Orderbuch statt nur des Preises: die asks kommen
+         * ABSTEIGEND, der Kaufpreis ist also das MINIMUM, nicht asks[0].
+         * Diese Verwechslung erzeugt Fantasiepreise (Panel-Lehre). Aus
+         * derselben Antwort kommt die handelbare Menge an der besten
+         * Stufe, also der belegte Hoechsteinsatz dieser Seite. */
+        return holeJson('https://clob.polymarket.com/book?token_id=' + tokens[idx])
+          .then(function (buch) {
+            var asks = (buch && buch.asks) || [];
+            var beste = null;
+            for (var a = 0; a < asks.length; a++) {
+              var pr = Number(asks[a].price);
+              if (!(pr > 0 && pr < 1)) continue;
+              if (beste === null || pr < beste.preis) {
+                beste = { preis: pr, menge: Number(asks[a].size) };
+              }
+            }
+            var p = beste ? { price: beste.preis } : null;
+            einzel.mengeAnteile = beste ? beste.menge : null;
+            einzel.mengeGeld = beste && isFinite(beste.menge) ? beste.menge * beste.preis : null;
             var preis = Number(p && p.price);
             if (!(preis > 0 && preis < 1)) {
               return { status: 'unpruefbar', text: 'Das Orderbuch nennt keinen gültigen Briefkurs.' };
@@ -96,7 +122,10 @@
                      frage: einzel.frage, ereignis: einzel.ereignis,
                      anpfiff: einzel.anpfiff, endet: einzel.endet,
                      serie: einzel.serie, marktArt: einzel.marktArt,
-                     quelle: 'CLOB-Orderbuch, Briefkurs (side=sell)',
+                     gebuehrSatz: einzel.gebuehrSatz, gebuehrNurTaker: einzel.gebuehrNurTaker,
+                     mengeAnteile: einzel.mengeAnteile, mengeGeld: einzel.mengeGeld,
+                     mindestGroesse: einzel.mindestGroesse, tickGroesse: einzel.tickGroesse,
+                     quelle: 'CLOB-Orderbuch: bester Briefkurs und Menge derselben Stufe',
                      quellLink: 'https://gamma-api.polymarket.com/markets?slug=' + encodeURIComponent(slug) };
           });
       })

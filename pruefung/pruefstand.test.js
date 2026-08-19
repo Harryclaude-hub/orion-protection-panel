@@ -543,6 +543,78 @@ var ampelU21 = B.ampel({ rechnungStufe: ergU21.urteil.stufe, paarungStufe: paarU
   harteBefunde: 0, warnungen: 0, rendite: 2.53 });
 ok(ampelU21.stufe === 'rot', 'die Ampel steht trotz sauberer Rechnung auf ROT');
 
+/* ---------- 17) Abgleich: Bericht gegen Anbieter ---------- */
+console.log('17) Abgleich Bericht gegen Anbieter');
+var AB = require('../js/abgleich.js');
+var bAb = Parser.parse(sauber.text);
+
+/* Der Anbieter bestaetigt alles: keine Abweichung. */
+var liveGleich = { seiten: [
+  { status: 'ok', wert: 0.480, gebuehrSatz: 0.04, gebuehrNurTaker: true, mengeGeld: 182.40, mindestGroesse: 5 },
+  { status: 'unpruefbar', text: 'Smarkets blockt den Browser.' }
+] };
+var aGleich = AB.pruefe(bAb, liveGleich);
+ok(aGleich.anzahlAbweichungen === 0, 'keine Abweichung, wenn der Anbieter alles bestaetigt');
+ok(aGleich.stufe === 'teilweise', 'Seite 2 unpruefbar, also nur teilweise abgeglichen');
+ok(aGleich.gebuehrFalsch === false, 'Gebuehr in Ordnung');
+
+/* DER wichtigste Fall: das Panel nennt eine falsche Gebuehr. */
+var liveGebuehr = { seiten: [
+  { status: 'ok', wert: 0.480, gebuehrSatz: 0.07, mengeGeld: 182.40 },
+  { status: 'unpruefbar', text: 'blockt' }
+] };
+var aGeb = AB.pruefe(bAb, liveGebuehr);
+ok(aGeb.gebuehrFalsch === true, 'falscher Gebuehrensatz wird erkannt');
+var bGeb = aGeb.befunde.filter(function (x) { return x.art === 'Gebuehrensatz'; })[0];
+ok(bGeb.urteil === 'weicht ab', 'und als Abweichung geführt');
+ok(bGeb.text.indexOf('HOEHER') >= 0, 'sagt, dass die echte Gebuehr hoeher ist');
+ok(bGeb.bericht === 0.04 && bGeb.anbieter === 0.07, 'beide Werte stehen nebeneinander');
+
+/* Kurs hat sich bewegt. */
+var liveKurs = { seiten: [
+  { status: 'ok', wert: 0.495, gebuehrSatz: 0.04, mengeGeld: 182.40 },
+  { status: 'unpruefbar', text: 'blockt' }
+] };
+var aKurs = AB.pruefe(bAb, liveKurs);
+var bKurs = aKurs.befunde.filter(function (x) { return x.art === 'Kurs'; })[0];
+ok(bKurs.urteil === 'weicht ab', 'bewegter Kurs wird erkannt');
+ok(bKurs.text.indexOf('SCHLECHTER') >= 0, 'teurerer Anteilspreis ist schlechter fuer den Kaeufer');
+
+/* Eine Bewegung innerhalb der Drucktoleranz ist KEINE Abweichung. */
+var liveWinzig = { seiten: [
+  { status: 'ok', wert: 0.4802, gebuehrSatz: 0.04, mengeGeld: 182.40 },
+  { status: 'unpruefbar', text: 'blockt' }
+] };
+ok(AB.pruefe(bAb, liveWinzig).anzahlAbweichungen === 0, 'Rundung an der letzten Stelle schlaegt nicht an');
+
+/* Menge deutlich kleiner. */
+var liveMenge = { seiten: [
+  { status: 'ok', wert: 0.480, gebuehrSatz: 0.04, mengeGeld: 40.00 },
+  { status: 'unpruefbar', text: 'blockt' }
+] };
+var bMenge = AB.pruefe(bAb, liveMenge).befunde.filter(function (x) { return x.art === 'Handelbare Menge'; })[0];
+ok(bMenge.urteil === 'weicht ab', 'stark veraenderte Menge wird erkannt');
+ok(bMenge.text.indexOf('WENIGER') >= 0, 'und sagt, dass weniger hineinpasst');
+
+/* Nicht abfragbare Seite: unpruefbar, niemals stillschweigend uebernommen. */
+var nurOffen = AB.pruefe(bAb, { seiten: [{ status: 'unpruefbar', text: 'geht nicht' }, { status: 'unpruefbar', text: 'geht nicht' }] });
+ok(nurOffen.anzahlAbweichungen === 0 && nurOffen.stufe === 'teilweise', 'nichts abfragbar: teilweise, keine Falschmeldung');
+ok(nurOffen.befunde.every(function (x) { return x.urteil === 'unpruefbar'; }), 'alle Befunde ehrlich als unpruefbar');
+
+/* echteWerte: was gilt fuer die Neuberechnung? */
+var echt = AB.echteWerte(bAb, liveGebuehr);
+ok(Math.abs(echt[0].gebuehr - 0.07) < 1e-9, 'fuer die Rechnung gilt der Satz DES ANBIETERS');
+ok(echt[0].gebuehrFrisch === true, 'und ist als frisch gekennzeichnet');
+ok(Math.abs(echt[1].gebuehr - 0.02) < 1e-9, 'wo der Anbieter schweigt, gilt der Bericht');
+ok(echt[1].gebuehrFrisch === false, 'und das steht auch so dran');
+
+/* Die Wirkung auf die Rendite: 4 Prozent gegen 7 Prozent Gebuehr. */
+var qeBericht = R.qeAnteil(0.480, 0.04), qeEcht = R.qeAnteil(0.480, 0.07);
+var qeGegen = R.qeBack(2.06, 0.02);
+var rBericht = R.pruefe(qeBericht, qeGegen, 100).rendite;
+var rEcht = R.pruefe(qeEcht, qeGegen, 100).rendite;
+ok(rEcht < rBericht, 'die echte Gebuehr druckt die Rendite (' + rBericht.toFixed(2) + ' auf ' + rEcht.toFixed(2) + ')');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {

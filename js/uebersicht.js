@@ -102,6 +102,22 @@
       frageZeile(3, 'Führen die Links zur Partie?', lk.text, lk.klasse) +
       frageZeile(4, 'Sind die Kurse noch aktuell?', ak.text, ak.klasse);
 
+    /* Womit wurde gerechnet? Das gehoert sichtbar dazu, sonst weiss
+     * niemand, ob die Prozentzahl auf gepruefte oder auf geglaubte
+     * Zahlen gestuetzt ist. */
+    var gm = opt.gerechnetMit || { kurs: 0, gebuehr: 0 };
+    var grundlage;
+    if (gm.kurs >= 2 && gm.gebuehr >= 2) {
+      grundlage = '<div class="grundlage gepruef">Gerechnet mit <b>beiden Kursen und beiden Gebuehrensaetzen direkt vom Anbieter</b>. ' +
+        'Der Bericht war hier nur der Ausgangspunkt.</div>';
+    } else if (gm.kurs > 0 || gm.gebuehr > 0) {
+      grundlage = '<div class="grundlage teils">Gerechnet mit ' + gm.kurs + ' von 2 Kursen und ' +
+        gm.gebuehr + ' von 2 Gebuehrensaetzen direkt vom Anbieter, der Rest stammt aus dem Bericht.</div>';
+    } else {
+      grundlage = '<div class="grundlage ungepruef">Gerechnet <b>nur mit den Zahlen des Berichts</b>. ' +
+        'Keine Seite war von hier aus abfragbar, also ist auch der Gewinn hier ungeprueft.</div>';
+    }
+
     var geld;
     if (opt.fluss && opt.plan) {
       var fl = opt.fluss, plan = opt.plan;
@@ -133,7 +149,7 @@
              'siehe die nicht prüfbaren Schritte weiter unten.</div>';
     }
 
-    return '<div class="ampel ' + a.stufe + '">' +
+    return grundlage + '<div class="ampel ' + a.stufe + '">' +
         '<span class="ampellicht"></span>' +
         '<span class="ampeltext"><b class="ampelkopf">' + txt(a.kopf) + '</b>' +
         '<span class="ampelsatz">' + txt(a.satz) + '</span></span>' +

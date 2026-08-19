@@ -615,3 +615,15 @@ footer { margin-top: 46px; }
 .wzeile b { font-size: 1.02rem; }
 .wzeile.gross b { font-size: 1.34rem; }
 .wtrenn { border-top: 1px dashed var(--rand); margin: 8px 0; }
+
+/* Grundlage der Rechnung: steht ueber der Ampel und sagt, ob die
+   Prozentzahl auf gepruefte oder auf geglaubte Zahlen gestuetzt ist. */
+.grundlage {
+  font-size: 0.82rem; padding: 8px 12px; margin: 12px 0 0;
+  border-left: 3px solid var(--rand); background: var(--karte-tief);
+  color: var(--leise);
+}
+.grundlage b { color: var(--text); }
+.grundlage.gepruef { border-left-color: var(--gruen); }
+.grundlage.teils { border-left-color: var(--signal); }
+.grundlage.ungepruef { border-left-color: var(--orange); }
