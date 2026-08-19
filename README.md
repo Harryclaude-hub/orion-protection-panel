@@ -1,28 +1,27 @@
 # Orion Protection Panel
 
-Tactical Verification Interface — unabhängige Nachrechnung für die
+Tactical Verification Interface, unabhängige Nachrechnung für die
 Prüfberichte des **Orion Panel Pro** (hieß bis 17.08.2026 „Orion Prüfstand").
 Bewusst ein **getrenntes Programm**: das Panel sucht, dieses Programm schützt.
-Kein gemeinsamer Code, keine gemeinsamen Daten, kein Takt, keine Kopplung —
-**bis in die Datenbank: eigenes Supabase-Projekt** (`orion-pruefstand`,
+Kein gemeinsamer Code, keine gemeinsamen Daten, kein Takt, keine Kopplung, **bis in die Datenbank: eigenes Supabase-Projekt** (`orion-pruefstand`,
 `jjvceatwrzxycrzmowbt`), nicht das Panel-Projekt. Es wird NICHTS automatisch
 vom Panel übernommen; der einzige Weg hinein ist der eingefügte Text.
 Fällt eines aus, läuft das andere weiter.
 
-**Live:** https://saifokaram1-hub.github.io/orion-protection-panel/
+**Live:** https://harryclaude-hub.github.io/orion-protection-panel/
 
 ## Design und Funktion laufen getrennt (Karams Regel)
 
 Die Optik (Navy/Cyan-Taktik-HUD nach Referenzbild, Logo, UTC-Uhr, Militär-Ton
 „Jawohl, Chef") lebt NUR in `css/stil.css`, `logo.svg` und `js/schmuck.js`.
-Diese Dateien sind **löschbar** — fällt eine weg, fehlt Schmuck, nie ein Wert
+Diese Dateien sind **löschbar**, fällt eine weg, fehlt Schmuck, nie ein Wert
 und nie eine Rechnung. Alle Farben sind Tokens am Kopf von `stil.css`; ein
 Thema-Wechsel tauscht nur die Tokens, nie Markup oder Logik. Keine schweren
 Effekte: die Seite bleibt auf einem normalen Laptop flüssig, Animationen sind
 sparsame CSS-Arbeit mit `prefers-reduced-motion`-Rücksicht. Nach jeder
 Designarbeit laufen die Funktions-Selbsttests.
 
-## Die Übersicht: lohnt es sich — und stimmt die Rechnung?
+## Die Übersicht: lohnt es sich, und stimmt die Rechnung?
 
 Ganz oben, vor allen Einzelheiten, beantwortet der Prüfstand vier Fragen:
 
@@ -31,7 +30,7 @@ Ganz oben, vor allen Einzelheiten, beantwortet der Prüfstand vier Fragen:
 3. **Führen die Links zur Partie?**
 4. **Sind die Kurse noch aktuell?** (der Anbieter-Abruf startet automatisch mit)
 
-Darunter der Geldfluss in echtem Geld — je Seite: Einsatz, brutto zurück,
+Darunter der Geldfluss in echtem Geld, je Seite: Einsatz, brutto zurück,
 **Gebühr in Euro**, netto zurück, Gewinn. Und die Zusammenfassung: eingesetzt,
 davon Gebühren, sicher zurück, garantierter Gewinn.
 
@@ -41,35 +40,34 @@ davon Gebühren, sicher zurück, garantierter Gewinn.
 |---|---|
 | **GRÜN** | Rechnung stimmt UND es bleibt mindestens 1 % sicherer Gewinn |
 | **ORANGE** | knapp: unter 1 %, oder Warnzeichen, oder Teile nicht prüfbar |
-| **ROT** | Rechenfehler / falscher Link — **oder: Rechnung richtig, aber kein Gewinn** |
+| **ROT** | Rechenfehler / falscher Link, **oder: Rechnung richtig, aber kein Gewinn** |
 
 Der letzte Fall ist der wichtigste: Ein Bericht kann fehlerfrei gerechnet sein
 und trotzdem keinen Cent bringen. Dann steht dort ausdrücklich
-**„RECHNUNG RICHTIG — ABER KEIN GEWINN"**, während die Rechenprüfung weiter
+**„RECHNUNG RICHTIG, ABER KEIN GEWINN"**, während die Rechenprüfung weiter
 „deckt sich" meldet. Beides ist wahr, und beides muss man sehen.
 
 ## Meinen beide Bücher dasselbe Spiel? (Paarungsprüfung)
 
 Die gefährlichste Fehlerklasse ist nicht die Rechnung, sondern die Paarung:
-zwei Bücher, die verschiedene Partien meinen. Die Rechnung ist dann fehlerfrei —
-und die Wette trotzdem offen. Das Orion Panel hat dagegen am 18.08.2026 drei
+zwei Bücher, die verschiedene Partien meinen. Die Rechnung ist dann fehlerfrei, und die Wette trotzdem offen. Das Orion Panel hat dagegen am 18.08.2026 drei
 Sperren bekommen; `js/paarung.js` baut sie **eigenständig nach** (zweite Fassung,
 kein kopierter Code):
 
 | Prüfung | Was sie fängt |
 |---|---|
-| **Alter** | U15–U23 gegen erste Elf — der Fund des Auftraggebers; die Namen sehen identisch aus |
+| **Alter** | U15–U23 gegen erste Elf, der Fund des Auftraggebers; die Namen sehen identisch aus |
 | **Geschlecht** | Frauen- gegen Männerpartie |
 | **Reserve** | zweite Mannschaft, Academy, „(Res)" gegen erste |
 | **Anpfiffzeit** | Toleranz 180 min (Panel-Messung an 274 Paaren: zwischen 2 und 3 Stunden lag kein echtes Paar, die falschen begannen bei 270 min). Fängt zusätzlich das **Rückspiel**, bei dem Namen und Kennungen gleich sind und nur der Termin abweicht |
 | **Liga** | Jugend-, Reserve- oder Frauenliga auf nur einer Seite (live belegter Fall: „Argentinian Primera Division Reserves") |
 
-Eine erkannte Fehlpaarung stellt die Ampel auf **ROT** — aber mit eigener,
-ehrlicher Begründung: **„NICHT SETZEN — ZWEI VERSCHIEDENE SPIELE"**, während
+Eine erkannte Fehlpaarung stellt die Ampel auf **ROT**, aber mit eigener,
+ehrlicher Begründung: **„NICHT SETZEN, ZWEI VERSCHIEDENE SPIELE"**, während
 Frage 2 weiterhin korrekt „geprüft, deckt sich" meldet. Eine falsche Begründung
 wäre fast so schlimm wie gar kein Alarm.
 
-Fehlt eine Angabe, wird **nicht** gesperrt und **nicht** geraten — dann steht dort
+Fehlt eine Angabe, wird **nicht** gesperrt und **nicht** geraten, dann steht dort
 „nicht prüfbar" mit der Aufforderung, beide Links selbst zu öffnen.
 
 ## Woher jede Zahl stammt
@@ -77,17 +75,17 @@ Fehlt eine Angabe, wird **nicht** gesperrt und **nicht** geraten — dann steht 
 Über der Übersicht steht eine Herkunftstabelle. Jede Angabe trägt ihre Quelle,
 und wo es geht, einen Link zum Nachsehen:
 
-- **aus dem Bericht** — steht so im eingefügten Text des Panels
-- **beim Anbieter nachgefragt** — direkt geholt (Marktfrage, Anpfiff, Serie, Kurs),
+- **aus dem Bericht**, steht so im eingefügten Text des Panels
+- **beim Anbieter nachgefragt**, direkt geholt (Marktfrage, Anpfiff, Serie, Kurs),
   mit Link auf die Abfrage
-- **selbst gerechnet** — vom Prüfstand aus den beiden anderen erzeugt
+- **selbst gerechnet**, vom Prüfstand aus den beiden anderen erzeugt
 
 Was von hier aus nicht erreichbar ist (Kalshi, Smarkets, Betfair), wird ausdrücklich
 als solches benannt, statt eine Zahl zu erfinden.
 
 ## Rechen-Werkstatt und Nebennotiz
 
-Ganz unten: Felder, in denen jede Zahl geändert werden kann — Kurs, Gebühr,
+Ganz unten: Felder, in denen jede Zahl geändert werden kann, Kurs, Gebühr,
 Einsatz, Rundung, Back/Lay/Anteilspreis. Es rechnet sofort mit und zeigt jede
 Formel. Was dort steht, ändert **kein Urteil** und landet in **keinem Verlauf**;
 die Prüfung oben bleibt unberührt. Daneben ein Notizblock, der auf dem Gerät
@@ -96,12 +94,12 @@ erhalten bleibt.
 ## Was es tut
 
 1. **Einfügen:** Im Panel auf einer Karte „Kopieren" drücken, den Bericht hier
-   einfügen — die Prüfung startet von selbst.
+   einfügen, die Prüfung startet von selbst.
 2. **Aufteilen:** Der Bericht wird in alle Einzelteile zerlegt: Spiel, Bereich,
    Zuordnung, beide Seiten (Buch, Seite, Kurs, Gebühr, Effektivquote, Kursalter,
    Menge, Link), Rechnung, Zeiten, Absage-Bilanz.
 3. **Nachrechnen:** Jede Zahl wird mit einer eigenständigen Zweitfassung der
-   Formeln neu gerechnet — Schritt für Schritt, mit Formel, eingesetzten Zahlen
+   Formeln neu gerechnet, Schritt für Schritt, mit Formel, eingesetzten Zahlen
    und dem Panel-Wert daneben. Drei Urteile, nie zwei:
    **deckt sich · weicht ab · nicht prüfbar.**
 4. **Querproben:** Zusätzlich formelunabhängige Kontrollen: beide Ausgänge
@@ -112,10 +110,10 @@ erhalten bleibt.
    Adresse zum genannten Buch (Polymarket↔polymarket.com, Betfair↔Orbit …)?
    Stufe 2: finden sich die Wörter des Link-Pfads in Spiel/Partie wieder
    (Stoppwörter nach Panel-Lehre: reine Zahlen, „will/does/…", vs/fc/…)?
-   Kalshi-Kennungen und Orbit-Marktnummern tragen keine Wörter — dort steht
+   Kalshi-Kennungen und Orbit-Marktnummern tragen keine Wörter, dort steht
    ehrlich „von außen nicht prüfbar". Beim Aktualitäts-Abruf nennt Polymarket
-   zusätzlich die FRAGE des Marktes, den der Link öffnet — der schärfste Beleg.
-6. **Einsatzrechner — „was setze ich wirklich?"** Der Bericht rechnet immer
+   zusätzlich die FRAGE des Marktes, den der Link öffnet, der schärfste Beleg.
+6. **Einsatzrechner, „was setze ich wirklich?"** Der Bericht rechnet immer
    mit 100 als Grundeinsatz und mit Beträgen wie 49,71. Gesetzt wird aber
    mit echtem Geld und auf runde Summen, und **ab da zahlen die beiden
    Ausgänge nicht mehr gleich aus**. Der Rechner zeigt: Einsatz je Seite
@@ -126,10 +124,9 @@ erhalten bleibt.
    Scanners: Marge des Marktes, implizite Wahrscheinlichkeiten je Seite,
    Kurspuffer. Warnt, wenn die Rundung die Arbitrage auffrisst oder der
    Einsatz über dem Höchstbetrag des Berichts liegt.
-   *(Fachliche Arbeitsschritte wie bei professionellen Surebet-Rechnern —
-   die Rechnung ist hier eigenständig umgesetzt und getestet.)*
+   *(Fachliche Arbeitsschritte wie bei professionellen Surebet-Rechnern,    die Rechnung ist hier eigenständig umgesetzt und getestet.)*
 7. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
-   sind — mit den Erfahrungswerten der Panel-Messungen vom 13.08.2026:
+   sind, mit den Erfahrungswerten der Panel-Messungen vom 13.08.2026:
    - Kurs länger als 15 Minuten unverändert (7 von 8 falschen Funden kamen
      von einem klebenden Kurs)
    - Buchprobe des Gegenbuchs unter 1,00 (Buch widerspricht sich selbst)
@@ -139,16 +136,16 @@ erhalten bleibt.
      Gebührensatz, Absage-Bilanz
    - erkennt außerdem, wenn eine Effektivquote der **alten** Polymarket-
      Gebührenformel `Satz × min(p, 1−p)` folgt statt der belegten
-     `Satz × p × (1−p)` — und sagt das ausdrücklich.
+     `Satz × p × (1−p)`, und sagt das ausdrücklich.
 6. **Aktualität:** Auf Klick (einmalig, kein Takt) beim Anbieter nachsehen,
    ob die Zahlen noch stimmen, und den Eintrag mit den aktuellen Zahlen neu
    rechnen. Gemessen am 17.08.2026: **Polymarket** antwortet dem Browser
    (Gamma-Katalog + CLOB-Orderbuch, Briefkurs `side=sell`); **Kalshi** und
-   **Smarkets** blocken den Browser in der Regel (CORS) — dann steht dort
+   **Smarkets** blocken den Browser in der Regel (CORS), dann steht dort
    „nicht prüfbar" statt einer geratenen Zahl; **Betfair** kann nur die
    Bridge lesen, der Orbit-Link dient zum Selbstvergleich.
 7. **Verlauf:** Jede Prüfung wird gespeichert. Ohne Anmeldung nur auf dem
-   Gerät (localStorage, max. 50). Mit E-Mail + Passwort in Supabase — dann
+   Gerät (localStorage, max. 50). Mit E-Mail + Passwort in Supabase, dann
    auf jedem Gerät abrufbar. Row Level Security: jeder sieht nur seine
    eigenen Zeilen.
 
@@ -162,7 +159,7 @@ erhalten bleibt.
 | `js/einsatz.js` | Einsatzrechner: Rundung, Gewinn je Ausgang, Marge, Puffer |
 | `js/bewertung.js` | Ampel (lohnt es sich?) + Geldfluss mit Gebühren in Geld |
 | `js/uebersicht.js` | die Übersicht ganz oben: vier Fragen + Geldtabelle |
-| `js/paarung.js` | Alter, Anpfiffzeit, Liga — meinen beide dasselbe Spiel? |
+| `js/paarung.js` | Alter, Anpfiffzeit, Liga, meinen beide dasselbe Spiel? |
 | `js/herkunft.js` | Herkunftstabelle mit Quellen-Links + Paarungsvergleich |
 | `js/werkstatt.js` | Rechen-Werkstatt zum Selbernachrechnen (ohne Rückwirkung) |
 | `js/pruefer.js` | Nachrechnung, Querproben, Warnzeichen, Urteil |
@@ -173,7 +170,7 @@ erhalten bleibt.
 | `js/schmuck.js` | Design-Schicht: nur die UTC-Uhr der Fußleiste, löschbar |
 | `logo.svg` | Logo und Favicon (Delta im Taktik-Rahmen), löschbar |
 
-## Rechnet es wirklich nach? — gemessen, nicht behauptet
+## Rechnet es wirklich nach?, gemessen, nicht behauptet
 
 `node pruefung/haertetest.js` verfälscht einen echten Bericht gezielt und
 zählt, was gefangen wird. Stand 17.08.2026:
@@ -189,7 +186,7 @@ manipulierter Kurs oder Quote, 50/50-Aufteilung statt nach Effektivquote,
 zu hohe Auszahlung, falscher Gewinn, Link auf eine fremde Partie, Link aufs
 falsche Buch, alte Gebührenformel.
 
-**Die Nachrechnung ist reine Mathematik im Browser — kein KI-Modell, kein
+**Die Nachrechnung ist reine Mathematik im Browser, kein KI-Modell, kein
 Raten, kein Zufall.** Dieselbe Eingabe ergibt immer dasselbe Urteil, und
 jede Zahl steht sichtbar auf dem Rechenblatt.
 
@@ -197,7 +194,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 1. **Halbzeit gegen ganzes Spiel.** Ist die Rechnung stimmig, aber die
    beiden Bücher meinen verschiedene Fragen, ist das aus dem Text allein
-   nicht entscheidbar — der Bericht nennt beim Gegenbuch nur die Partie.
+   nicht entscheidbar, der Bericht nennt beim Gegenbuch nur die Partie.
    Dagegen helfen: Link-Prüfung, Zuordnungswert, und beide Links öffnen.
 2. **Ein durchgehend stimmig erfundener Kurs.** Passt alles zueinander,
    kann reines Nachrechnen es nicht widerlegen. Dagegen helfen: der
@@ -206,7 +203,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js` — **179 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js`, **179 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde
@@ -215,13 +212,11 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
   Polymarket-Aktualität live gegen die echte Gamma/CLOB-Schnittstelle
   gemessen (17.08.2026).
 - **Nicht geprüft:** Anmeldung mit echtem Konto (kein Testkonto angelegt);
-  ob die Bestätigungs-E-Mail nötig ist, zeigt sich beim ersten Konto —
-  beide Wege werden abgefangen.
+  ob die Bestätigungs-E-Mail nötig ist, zeigt sich beim ersten Konto,   beide Wege werden abgefangen.
 
 ## Datenbank
 
-**Eigenes** Supabase-Projekt `orion-pruefstand` (`jjvceatwrzxycrzmowbt`) —
-getrennt vom Panel-Projekt. Eine Tabelle `pruefstand_verlauf` (id, nutzer →
+**Eigenes** Supabase-Projekt `orion-pruefstand` (`jjvceatwrzxycrzmowbt`), getrennt vom Panel-Projekt. Eine Tabelle `pruefstand_verlauf` (id, nutzer →
 auth.users, titel, urteil, urteil_text, rendite, nummer, bericht, erstellt)
 mit RLS auf `nutzer = auth.uid()`. Das Panel-Projekt wird von diesem
 Programm weder gelesen noch geschrieben.
