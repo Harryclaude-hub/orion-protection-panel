@@ -627,3 +627,44 @@ footer { margin-top: 46px; }
 .grundlage.gepruef { border-left-color: var(--gruen); }
 .grundlage.teils { border-left-color: var(--signal); }
 .grundlage.ungepruef { border-left-color: var(--orange); }
+
+/* ---------- DIE ZWEI GETRENNTEN AMPELN (Karam 19.08.) ----------
+   Links die Rechnung, rechts der Gewinn. Zwei Fragen, zwei Lampen,
+   gleich gross. Keine der beiden darf die andere ueberdecken. */
+.ampelpaar {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin: 14px 0 4px;
+}
+@media (max-width: 780px) { .ampelpaar { grid-template-columns: 1fr; } }
+.doppelampel {
+  border: 1px solid var(--rand);
+  background: linear-gradient(180deg, var(--karte) 0%, var(--karte-tief) 100%);
+  clip-path: polygon(var(--eck) 0, 100% 0, 100% calc(100% - var(--eck)), calc(100% - var(--eck)) 100%, 0 100%, 0 var(--eck));
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.dakopf {
+  font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--leise);
+}
+.dafrage { font-size: 0.95rem; color: var(--text); line-height: 1.35; }
+.dalampe { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.dapunkt {
+  width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto;
+  background: var(--leise);
+}
+.daurteil {
+  font-size: 1.12rem; letter-spacing: 0.1em; text-transform: uppercase;
+  line-height: 1.15;
+}
+.dasatz { font-size: 0.85rem; color: var(--leise); line-height: 1.45; }
+
+.doppelampel.gruen  { border-color: var(--gruen);  box-shadow: inset 4px 0 0 var(--gruen); }
+.doppelampel.orange { border-color: var(--orange); box-shadow: inset 4px 0 0 var(--orange); }
+.doppelampel.rot    { border-color: var(--rot);    box-shadow: inset 4px 0 0 var(--rot); }
+.doppelampel.gruen .dapunkt  { background: var(--gruen);  box-shadow: 0 0 16px var(--gruen); }
+.doppelampel.orange .dapunkt { background: var(--orange); box-shadow: 0 0 16px var(--orange); }
+.doppelampel.rot .dapunkt    { background: var(--rot);    box-shadow: 0 0 16px var(--rot); }
+.doppelampel.gruen .daurteil  { color: var(--gruen); }
+.doppelampel.orange .daurteil { color: var(--orange); }
+.doppelampel.rot .daurteil    { color: var(--rot); }

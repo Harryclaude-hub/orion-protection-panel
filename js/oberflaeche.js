@@ -164,7 +164,7 @@
 
     var warn = erg.warnungen.filter(function (w) { return w.stufe === 'warnung'; }).length;
     var harte = erg.warnungen.filter(function (w) { return w.stufe === 'fehler'; }).length;
-    /* Eine nachgewiesene Fehlpaarung wiegt wie ein Rechenfehler,      * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
+    /* Eine nachgewiesene Fehlpaarung wiegt wie ein Rechenfehler, * die Rechnung mag stimmen, die Absicherung besteht trotzdem nicht. */
     var paar = paarungRechnen();
     var paarungFalsch = paar && paar.stufe === "falsch";
     /* Ein falscher Gebuehrensatz im Bericht wiegt schwer: er geht in
@@ -178,11 +178,20 @@
       warnungen: warn,
       rendite: fluss ? fluss.garantierteRendite : null
     });
+    /* Zwei getrennte Ampeln, weil es zwei getrennte Fragen sind. */
+    var zwei = B.zweiAmpeln({
+      rechnungStufe: erg.urteil.stufe,
+      paarungStufe: paar ? paar.stufe : null,
+      warnungen: warn,
+      rendite: fluss ? fluss.garantierteRendite : null
+    });
     zustand.ampel = a;
+    zustand.zweiAmpeln = zwei;
 
     el('uebersicht').innerHTML = P.uebersicht.baue({
       bericht: b, ergebnis: erg, plan: plan, fluss: fluss, ampel: a,
       aktualitaet: zustand.aktualitaet,
+      zweiAmpeln: zwei,
       gerechnetMit: frisch,
       abgleich: zustand.abgleich,
       einheit: (b.rechnung && b.rechnung.sEinheit) || ''
@@ -507,7 +516,7 @@
           (gleich ? '<span class="gruen">unverändert</span>' : '<span class="orange">hat sich bewegt</span>') +
           (s.quelle ? '<div class="leise klein">Quelle: ' + txt(s.quelle) + '</div>' : '');
         if (s.frage) {
-          /* Der Anbieter nennt die Frage des Marktes, den der Link öffnet,            * der direkteste Beleg, ob der Link zur Partie führt. */
+          /* Der Anbieter nennt die Frage des Marktes, den der Link öffnet, * der direkteste Beleg, ob der Link zur Partie führt. */
           inhalt += '<div class="klein">Der Link öffnet: „' + txt(s.frage) + '"' +
             (b.titel ? ' <span class="leise">(Bericht: „' + txt(b.titel) + '")</span>' : '') + '</div>';
         }

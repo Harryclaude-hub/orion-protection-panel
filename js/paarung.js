@@ -159,7 +159,7 @@
     var hatText2 = !!norm([s2.liga, s2.titel, s2.link].filter(Boolean).join(" "));
     if (!l1 && !l2 && hatText1 && hatText2) {
       /* Beide Seiten liefern Text, und KEINE trägt einen Jugend-,
-       * Reserve- oder Frauen-Hinweis. Die Sperre greift also nicht,        * das ist eine echte Aussage, kein Nichtwissen. Was sie NICHT
+       * Reserve- oder Frauen-Hinweis. Die Sperre greift also nicht, * das ist eine echte Aussage, kein Nichtwissen. Was sie NICHT
        * sagt: ob es wirklich derselbe Wettbewerb ist. Genau deshalb
        * steht der Hinweis dabei. */
       befunde.push({ art: "Liga", urteil: "passt",

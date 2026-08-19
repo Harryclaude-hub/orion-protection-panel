@@ -196,12 +196,103 @@
     };
   }
 
+
+  /* ---------- ZWEI GETRENNTE AMPELN (Karam 19.08.) ----------
+   * Karams Anordnung: nicht eine gemischte Anzeige, sondern zwei, die
+   * je fuer sich rot oder gruen sind:
+   *
+   *   AMPEL 1  Stimmt die Rechnung, die ich dir gegeben habe?
+   *   AMPEL 2  Ist es profitabel?
+   *
+   * Der Grund, warum das getrennt gehoert: die beiden haben nichts
+   * miteinander zu tun. Ein Bericht kann fehlerfrei gerechnet sein und
+   * trotzdem Verlust bringen. Und eine Rendite von 3 Prozent ist
+   * wertlos, wenn die Rechnung dahinter nicht stimmt. Wer beides in
+   * eine Lampe presst, verliert genau die Auskunft, auf die es
+   * ankommt. */
+  function zweiAmpeln(opt) {
+    var r = opt.rendite;
+
+    /* ---- AMPEL 1: die Rechnung des Berichts ---- */
+    var rech;
+    if (opt.rechnungStufe === "fehler") {
+      rech = {
+        stufe: "rot", kurz: "RECHNUNG FALSCH",
+        satz: "Mindestens eine Stelle der Rechnung deckt sich nicht mit der eigenen " +
+              "Nachrechnung. Die roten Bloecke im Rechenweg zeigen, welche."
+      };
+    } else if (opt.rechnungStufe === "teilweise") {
+      rech = {
+        stufe: "orange", kurz: "TEILWEISE PRUEFBAR",
+        satz: "Was nachgerechnet werden konnte, deckt sich. Fuer den Rest fehlten " +
+              "Angaben im Bericht. Es wurde nichts geraten."
+      };
+    } else {
+      rech = {
+        stufe: "gruen", kurz: "RECHNUNG STIMMT",
+        satz: "Jede Zahl des Berichts wurde eigenstaendig nachgerechnet und deckt sich, " +
+              "innerhalb der Rundung, mit der die Werte gedruckt sind."
+      };
+    }
+
+    /* ---- AMPEL 2: lohnt es sich wirklich? ---- */
+    var gew;
+    if (opt.paarungStufe === "falsch") {
+      gew = {
+        stufe: "rot", kurz: "KEIN GEWINN",
+        satz: "Die beiden Buecher meinen nicht dieselbe Partie. Dann ist es keine " +
+              "Absicherung, sondern zwei offene Wetten, egal was die Rechnung sagt."
+      };
+    } else if (!istZahl(r)) {
+      gew = {
+        stufe: "orange", kurz: "NICHT BERECHENBAR",
+        satz: "Es fehlen Angaben, um den tatsaechlichen Gewinn zu bestimmen."
+      };
+    } else if (r <= 0) {
+      gew = {
+        stufe: "rot", kurz: "KEIN GEWINN",
+        satz: "Nach allen Gebuehren bleibt nichts uebrig (" + r.toFixed(2) + " Prozent). " +
+              "Nicht setzen."
+      };
+    } else if (r < GRENZE_LOHNT) {
+      gew = {
+        stufe: "orange", kurz: "KNAPP PROFITABEL",
+        satz: "Es bleiben " + r.toFixed(2) + " Prozent, also weniger als ein Prozent. " +
+              "Rundung, eine kleine Kursbewegung oder ein anderer Gebuehrentarif fressen das leicht auf."
+      };
+    } else if (opt.warnungen > 0) {
+      gew = {
+        stufe: "orange", kurz: "PROFITABEL, ABER",
+        satz: "Es bleiben " + r.toFixed(2) + " Prozent sicherer Gewinn, aber es stehen " +
+              opt.warnungen + " Warnzeichen dagegen (etwa ein alter Kurs oder eine unbekannte Menge)."
+      };
+    } else {
+      gew = {
+        stufe: "gruen", kurz: "PROFITABEL",
+        satz: "Nach allen Gebuehren bleiben " + r.toFixed(2) + " Prozent sicherer Gewinn, " +
+              "unabhaengig davon, wie das Spiel ausgeht."
+      };
+    }
+
+    /* Steht die Rechnung des Berichts auf Rot, muss bei der Gewinnzahl
+     * dabeistehen, woher SIE kommt: aus der eigenen Nachrechnung, nicht
+     * aus dem Bericht. Sonst liest es sich wie ein Guetesiegel fuer eine
+     * falsche Rechnung. */
+    if (opt.rechnungStufe === "fehler" && istZahl(r)) {
+      gew.satz += " Diese Zahl stammt aus der eigenen Nachrechnung, nicht aus dem " +
+        "Bericht: dessen Rechnung ist ja gerade als fehlerhaft erkannt.";
+    }
+
+    return { rechnung: rech, gewinn: gew };
+  }
+
   var api = {
     GRENZE_LOHNT: GRENZE_LOHNT,
     form: form,
     seiteFluss: seiteFluss,
     geldfluss: geldfluss,
-    ampel: ampel
+    ampel: ampel,
+    zweiAmpeln: zweiAmpeln
   };
 
   if (typeof module === 'object' && module.exports) module.exports = api;

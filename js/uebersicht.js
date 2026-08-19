@@ -70,6 +70,25 @@
     return { text: frisch + ' geprüfte(r) Kurs(e) unverändert', klasse: 'gruen' };
   }
 
+  /* Die zwei getrennten Ampeln (Karam 19.08.). Sie stehen ganz oben,
+   * nebeneinander, gleich gross: links die Rechnung, rechts der
+   * Gewinn. Jede fuer sich rot, orange oder gruen. */
+  function zweiAmpelnBlock(zwei) {
+    if (!zwei) return '';
+    function eine(titel, frage, a) {
+      return '<div class="doppelampel ' + a.stufe + '">' +
+        '<div class="dakopf">' + txt(titel) + '</div>' +
+        '<div class="dafrage">' + txt(frage) + '</div>' +
+        '<div class="dalampe"><span class="dapunkt"></span>' +
+          '<b class="daurteil">' + txt(a.kurz) + '</b></div>' +
+        '<div class="dasatz">' + txt(a.satz) + '</div>' +
+      '</div>';
+    }
+    return '<div class="ampelpaar">' +
+      eine('Prüfung 1', 'Stimmt die Rechnung, die du mir gegeben hast?', zwei.rechnung) +
+      eine('Prüfung 2', 'Ist es profitabel?', zwei.gewinn) +
+    '</div>';
+  }
   function frageZeile(nr, text, antwort, klasse) {
     return '<div class="ufrage">' +
       '<span class="unr">' + nr + '</span>' +
@@ -154,7 +173,7 @@
              'siehe die nicht prüfbaren Schritte weiter unten.</div>';
     }
 
-    return grundlage + '<div class="ampel ' + a.stufe + '">' +
+    return zweiAmpelnBlock(opt.zweiAmpeln) + grundlage + '<div class="ampel ' + a.stufe + '">' +
         '<span class="ampellicht"></span>' +
         '<span class="ampeltext"><b class="ampelkopf">' + txt(a.kopf) + '</b>' +
         '<span class="ampelsatz">' + txt(a.satz) + '</span></span>' +

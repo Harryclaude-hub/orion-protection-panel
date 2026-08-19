@@ -21,6 +21,25 @@ Effekte: die Seite bleibt auf einem normalen Laptop flüssig, Animationen sind
 sparsame CSS-Arbeit mit `prefers-reduced-motion`-Rücksicht. Nach jeder
 Designarbeit laufen die Funktions-Selbsttests.
 
+## Zwei getrennte Ampeln, weil es zwei getrennte Fragen sind
+
+Ganz oben stehen zwei gleich grosse Lampen nebeneinander:
+
+| | Frage | rot heisst |
+|---|---|---|
+| **Pruefung 1** | Stimmt die Rechnung, die du mir gegeben hast? | im Bericht steckt ein Rechenfehler |
+| **Pruefung 2** | Ist es profitabel? | kein Gewinn, oder zwei verschiedene Spiele |
+
+Sie faerben sich **unabhaengig voneinander**. Belegt im Browser:
+
+- Ein in sich stimmiger Bericht mit Verlust: Lampe 1 gruen, Lampe 2 rot.
+- Ein Rechenfehler bei guter Rendite: Lampe 1 rot, Lampe 2 gruen, mit dem
+  Zusatz, dass die Gewinnzahl aus der eigenen Nachrechnung stammt.
+- Eine U21-Fehlpaarung: Lampe 1 gruen, Lampe 2 rot.
+
+Wer beides in eine Lampe presst, verliert genau die Auskunft, auf die es
+ankommt.
+
 ## Die Übersicht: lohnt es sich, und stimmt die Rechnung?
 
 Ganz oben, vor allen Einzelheiten, beantwortet der Prüfstand vier Fragen:
@@ -164,7 +183,7 @@ erhalten bleibt.
    Scanners: Marge des Marktes, implizite Wahrscheinlichkeiten je Seite,
    Kurspuffer. Warnt, wenn die Rundung die Arbitrage auffrisst oder der
    Einsatz über dem Höchstbetrag des Berichts liegt.
-   *(Fachliche Arbeitsschritte wie bei professionellen Surebet-Rechnern,    die Rechnung ist hier eigenständig umgesetzt und getestet.)*
+   *(Fachliche Arbeitsschritte wie bei professionellen Surebet-Rechnern, die Rechnung ist hier eigenständig umgesetzt und getestet.)*
 7. **Warnzeichen:** Dinge, die rechnerisch stimmen und trotzdem gefährlich
    sind, mit den Erfahrungswerten der Panel-Messungen vom 13.08.2026:
    - Kurs länger als 15 Minuten unverändert (7 von 8 falschen Funden kamen
@@ -243,7 +262,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
 
 ## Wie es geprüft wurde
 
-- `node pruefung/pruefstand.test.js`, **198 Prüfungen**, darunter für jede
+- `node pruefung/pruefstand.test.js`, **223 Prüfungen**, darunter für jede
   Schutzregel ein Test, der sie **auslöst**: eingebaute falsche Rendite,
   Effektivquote nach alter Formel, Selbstwiderspruch Formelzeile/Endwert,
   Kursalter, unstimmige Buchprobe, Lay-Seite, Euro-Umrechnung, fremde
@@ -252,7 +271,7 @@ jede Zahl steht sichtbar auf dem Rechenblatt.
   Polymarket-Aktualität live gegen die echte Gamma/CLOB-Schnittstelle
   gemessen (17.08.2026).
 - **Nicht geprüft:** Anmeldung mit echtem Konto (kein Testkonto angelegt);
-  ob die Bestätigungs-E-Mail nötig ist, zeigt sich beim ersten Konto,   beide Wege werden abgefangen.
+  ob die Bestätigungs-E-Mail nötig ist, zeigt sich beim ersten Konto, beide Wege werden abgefangen.
 
 ## Datenbank
 

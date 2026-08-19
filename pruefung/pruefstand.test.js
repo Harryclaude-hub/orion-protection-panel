@@ -615,6 +615,61 @@ var rBericht = R.pruefe(qeBericht, qeGegen, 100).rendite;
 var rEcht = R.pruefe(qeEcht, qeGegen, 100).rendite;
 ok(rEcht < rBericht, 'die echte Gebuehr druckt die Rendite (' + rBericht.toFixed(2) + ' auf ' + rEcht.toFixed(2) + ')');
 
+/* ---------- 18) Zwei getrennte Ampeln ---------- */
+console.log('18) Zwei getrennte Ampeln');
+/* Karams Anordnung vom 19.08.: eine Lampe fuer die Rechnung, eine
+   fuer den Gewinn. Der Sinn ist, dass sie sich NICHT gegenseitig
+   faerben. Genau das wird hier Fall fuer Fall geprueft. */
+
+/* Alles sauber: beide gruen. */
+var zA = B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 0, rendite: 2.53 });
+ok(zA.rechnung.stufe === 'gruen', 'saubere Rechnung: Lampe 1 gruen');
+ok(zA.gewinn.stufe === 'gruen', 'guter Gewinn: Lampe 2 gruen');
+
+/* Rechnung stimmt, aber Verlust: Lampe 1 bleibt GRUEN, Lampe 2 wird rot. */
+var zB = B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 0, rendite: -0.42 });
+ok(zB.rechnung.stufe === 'gruen', 'Verlust faerbt die Rechnungs-Lampe NICHT rot');
+ok(zB.gewinn.stufe === 'rot', 'aber die Gewinn-Lampe schon');
+ok(zB.rechnung.kurz === 'RECHNUNG STIMMT', 'und sagt weiterhin: Rechnung stimmt');
+
+/* Rechenfehler bei hoher Rendite: Lampe 1 rot, Lampe 2 bleibt gruen. */
+var zC = B.zweiAmpeln({ rechnungStufe: 'fehler', paarungStufe: 'passt', warnungen: 0, rendite: 8.0 });
+ok(zC.rechnung.stufe === 'rot', 'Rechenfehler: Lampe 1 rot');
+ok(zC.gewinn.stufe === 'gruen', 'der Rechenfehler faerbt die Gewinn-Lampe NICHT');
+ok(zC.gewinn.satz.indexOf('eigenen Nachrechnung') >= 0,
+  'dafuer steht dabei, dass die Zahl aus der EIGENEN Rechnung kommt');
+
+/* Fehlpaarung: Rechnung gruen, Gewinn rot mit eigenem Grund. */
+var zD = B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'falsch', warnungen: 0, rendite: 2.53 });
+ok(zD.rechnung.stufe === 'gruen', 'Fehlpaarung faerbt die Rechnungs-Lampe nicht');
+ok(zD.gewinn.stufe === 'rot', 'aber die Gewinn-Lampe wird rot');
+ok(zD.gewinn.satz.indexOf('nicht dieselbe Partie') >= 0, 'mit dem richtigen Grund');
+
+/* Zwischenstufen. */
+ok(B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 0, rendite: 0.6 }).gewinn.stufe === 'orange',
+  'unter 1 Prozent: Gewinn-Lampe orange');
+ok(B.zweiAmpeln({ rechnungStufe: 'teilweise', paarungStufe: 'passt', warnungen: 0, rendite: 2.5 }).rechnung.stufe === 'orange',
+  'teilweise pruefbar: Rechnungs-Lampe orange');
+ok(B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 2, rendite: 2.5 }).gewinn.stufe === 'orange',
+  'Warnzeichen: Gewinn-Lampe orange');
+ok(B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 0, rendite: null }).gewinn.stufe === 'orange',
+  'ohne Renditezahl: Gewinn-Lampe orange, nicht gruen');
+
+/* Beide Lampen tragen immer Kurztext und Begruendung. */
+[zA, zB, zC, zD].forEach(function (z, i) {
+  ok(!!z.rechnung.kurz && !!z.rechnung.satz, 'Fall ' + (i + 1) + ': Lampe 1 hat Text und Begruendung');
+  ok(!!z.gewinn.kurz && !!z.gewinn.satz, 'Fall ' + (i + 1) + ': Lampe 2 hat Text und Begruendung');
+});
+
+/* Die Unabhaengigkeit als Grundsatz: bei gleicher Rendite darf die
+   Rechnungs-Lampe variieren, ohne die Gewinn-Lampe mitzunehmen. */
+var gleich1 = B.zweiAmpeln({ rechnungStufe: 'ok', paarungStufe: 'passt', warnungen: 0, rendite: 2.53 });
+var gleich2 = B.zweiAmpeln({ rechnungStufe: 'fehler', paarungStufe: 'passt', warnungen: 0, rendite: 2.53 });
+ok(gleich1.gewinn.stufe === gleich2.gewinn.stufe,
+  'gleiche Rendite ergibt dieselbe Gewinn-Lampe, egal wie die Rechnung steht');
+ok(gleich1.rechnung.stufe !== gleich2.rechnung.stufe,
+  'waehrend die Rechnungs-Lampe sehr wohl unterscheidet');
+
 /* ---------- Ergebnis ---------- */
 console.log('----------------------------------------');
 if (fehler === 0) {
